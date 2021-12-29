@@ -1,0 +1,131 @@
+{% extends "base_page.html" %}
+
+
+     {% block content %}
+     <div id = "training_container">
+      <form class = "training_settings_form" name = "training_settings_form" method = "post" action = "#" onsubmit="return checkForm()">{% csrf_token %}
+        <div class = "labeled_box">
+          <label class=  "settings_label" for = "quantity">Quantity of words:</label>
+          <input id = "quantity" name = "quantity" type = "text" value = "10"/>
+        </div>
+        <div class = "labeled_box">
+          <label class=  "settings_label" for = "first_letter">Select the first letter:</label>
+          <select id = "first_letter" name = "first_letter">
+            <option value = "all">All</option>
+            {% for letter in letters %}
+                <option value = {{letter.lower}}>{{letter.upper}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class = "labeled_box">
+          <label class= "settings_label"> Timeout </label>
+          <input id = "timeout" type = "text" name = "time_out" value = "20000"/>
+        </div>
+        <div class = "labeled_box">
+          <label class=  "settings_label"> Word</label>
+          <input type = "radio" checked value = "word" name = "word_translation"/>
+          <label class=  "settings_label"> Translation </label>
+          <input type = "radio" value = "translation" name = "word_translation"/>
+          <br/>
+        </div>
+        <br/>
+        <div>
+          <button type = "button" class = "button_training_panel" id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+        </div>
+      </form>
+      
+      <div class = "training_field">
+        <p id = "current_word_ws"></p><br/>
+        <p id = "current_word_transcription"></p>
+        <p id = "current_word_counter" style = "position: absolute; right: 10px; bottom: 10px"></p>
+        <p id = "count_down_counter" style = "position: absolute; right: 10px; bottom: 10px"></p>
+      </div>
+  </div>
+      <!-- {% autoescape off %} {{main_content}} {% endautoescape %} -->
+    {% endblock %}
+
+    {% block script %}
+    <script>
+    var words = [];
+    var current_index = 0;
+    var count_down;
+    var time;
+    var int_show;
+    var translation = false;
+    
+    function get_words() {
+    var fd = new FormData(document.forms["training_settings_form"]);
+    var xhr = new XMLHttpRequest();
+    transl = document.forms[0]["word_translation"].value;
+    if (transl == "word") {
+    translation = false
+    $("#current_word_transcription").show()
+    }
+    else {
+    translation = true
+    $("#current_word_transcription").hide()
+    }
+    xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+    var response = xhr.responseText;
+    var response_format = '{"array":'+response+'}';
+    json_object = JSON.parse(response_format);
+    var objects_array = json_object.array;
+    words = objects_array;
+    quantity_of_words = words.length;
+    begin_slideshow();
+    };
+    };
+    url_str = window.location.href;
+    xhr.open("POST",url_str);
+    xhr.send(fd);
+    }
+    function show_next_word() {
+    var curr_word = words[current_index]
+    if (translation == false) {
+    $("#current_word_ws").text(curr_word.word)
+    }
+    else {
+    $("#current_word_ws").text(curr_word.translation)
+    }
+    $("#current_word_transcription").text(curr_word.transcription)
+    current_index++
+    begin_count_down()
+    //set_words_counter()
+    }
+    function set_words_counter() {
+    $("#current_word_counter").text(current_index + "/" + words.length)
+    }
+    function begin_slideshow() {
+    var timeout = $("#timeout")[0].value
+    show_next_word()
+    int_show = setInterval(show_next_word, timeout)
+    }
+    function begin_count_down() {
+    clearInterval(count_down)
+    var timeout = $("#timeout")[0].value
+    time = timeout/1000;
+    count_down = setInterval(decrement_time,1000)
+    }
+    function decrement_time() {
+    
+    $("#count_down_counter").text(time)
+    time--
+    }
+    $(document).ready(function(){
+    $("#button_begin").click(function(){
+    event.preventDefault();
+    var quantity = $("#quantity").val();
+    if (isNaN(quantity)) {
+    alert("Please, enter a number into the quantity field");
+    }
+    else {
+    $("#training_field_ws").css("visibility","visible");
+    get_words();
+    };
+    });
+    
+    });
+    </script>
+    {% endblock %}
+  

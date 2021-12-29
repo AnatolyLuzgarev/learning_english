@@ -1,0 +1,85 @@
+{% extends "base_page.html" %}
+
+
+{% block styles %}
+<style>
+
+</style>
+{% endblock %}
+
+
+
+      {% block content %}
+      <div id = "training_container">
+      <form id = "ms_form" method = "post" action = "#" onsubmit="return checkForm()">{% csrf_token %}
+        <label class = "settings_label" for = "letter">Select the phrasal verb:</label>
+        <select id = 'category' name = 'phrasal_verb'>
+          {% for phrasal_verb in phrasal_verbs %}
+               <option value = {{phrasal_verb}}>{{phrasal_verb}}</option> 
+          {% endfor %}
+        </select>
+        <button id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+      </form>
+      <div id = "training_field_phrasal_verbs">
+       </div>  
+  </div>
+      {% endblock %}
+
+    {% block script %}
+    <script>
+    var words = [];
+   
+   $("#button_begin").click(function(){
+    event.preventDefault();
+    get_table_phrasal_verbs();
+    });
+
+    function create_training_field(words) {
+      var new_table = document.createElement("table");
+      for (var x in words) {
+      var new_row = document.createElement("tr");
+      var col_word = document.createElement("td");
+      col_word.innerHTML = words[x].word; 
+      var col_trans = document.createElement("td");
+      col_trans.setAttribute("class", "phrasal_verbs_translation")
+      col_trans.innerHTML = words[x].translation;
+      var col_sent = document.createElement("td");
+      col_sent.setAttribute("class", "phrasal_verbs_sentence")
+      var textfield = document.createElement("textarea");
+      col_sent.appendChild(textfield);
+      new_row.appendChild(col_word);
+      new_row.appendChild(col_trans);
+      new_row.appendChild(col_sent);
+      new_table.appendChild(new_row);
+      }
+      var tr_field = document.getElementById("training_field_phrasal_verbs");
+      tr_field.innerHTML = ""
+      tr_field.appendChild(new_table);
+      $(".phrasal_verbs_translation").css("color","white")
+      $(".phrasal_verbs_translation").css("width","100px")
+      $(".phrasal_verbs_sentence").css("width","400px")
+      $("tr").css("font-size","18px")
+      $("textarea").css("width","100%")
+      $("textarea").css("height","100%")
+      }
+
+
+    function get_table_phrasal_verbs() {
+    var fd = new FormData(document.forms["ms_form"]);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+    var response = xhr.responseText;
+    var response_format = '{"array":'+response.replace(/'/g, '"')+'}';
+    json_object = JSON.parse(response_format);
+    var objects_array = json_object.array;
+    words = objects_array;
+    create_training_field(words);
+    };
+    };
+    url_str = window.location.href;
+    xhr.open("POST",url_str);
+    xhr.send(fd);
+    }
+    </script>
+    {% endblock %}

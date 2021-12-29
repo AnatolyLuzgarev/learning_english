@@ -1,0 +1,308 @@
+{% extends "base_page.html" %}
+{% block styles %}
+  <style>
+  .sql_label {
+  width: 80%;
+  color: green;
+  padding: 5px;
+  }
+  #sql_settings {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  }
+  #postgres_settings {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  }
+  #button_send {
+  background-color: rgba(200,200,200);
+  border-radius: 2px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  }
+  #file_loading_label {
+  font-size: 20px;
+  padding: 5px;
+  }
+  #my_file {
+  padding: 5px;
+  }
+
+  </style>
+{% endblock %}
+{% block content %}
+  <div class = "settings_section" id = "settings_section_file">
+    <label class = "section_label">Automatic data loading</label>
+    <form id = "all_data_form" name = "all_data_form">
+        <label>Data loading</label>
+        <button id = "load_all_data">Load data <img class = "button_icon" src = "/static/images/icons/save.png"/></button>
+    </form>
+    <label class = "section_label">Manual data loading</label>
+    <form id = "fl_form" action = "#" method = "post" enctype="multipart/form-data" onsubmit="return checkFile()">{% csrf_token %}
+
+      <div><label id = "file_loading_label"> Words loading </label></div>
+      <input type = "file" name = "my_file" id="my_file"/>
+      <input type="submit" id = "button_send"/>
+      <br/>
+  
+      
+      
+      <p id = "status_bar"></p>
+    </form>
+    <form id = "topics_loading_form" action = "#" method = "post" enctype="multipart/form-data" onsubmit="return check_file_topics()">{% csrf_token %}
+      <div><label id = "file_loading_label"> Topics loading </label></div>
+      <input type = "file" name = "topics_file" id="topics_file"/>
+      <input type="submit" id = "button_send_topics"/>
+      
+      <p id = "status_bar"></p>
+    </form>
+
+    <form id = "essays_loading_form" action = "#" method = "post" enctype="multipart/form-data" onsubmit="return check_file_essays()">{% csrf_token %}
+      <div><label id = "file_loading_label"> Essays loading </label></div>
+      <input type = "file" name = "essays_file" id="essays_file"/>
+      <input type="submit" id = "button_send_essays"/>
+      
+      <p id = "status_bar"></p>
+    </form>
+
+     <form id = "grammar_loading_form" action = "#" method = "post" enctype="multipart/form-data" onsubmit="return check_file_grammar()">{% csrf_token %}
+      <div><label id = "file_loading_label"> Grammar loading </label></div>
+      <input type = "file" name = "grammar_file" id="grammar_file"/>
+      <input type="submit" id = "button_send_grammar"/>
+      
+      <p id = "status_bar"></p>
+    </form>
+
+    <form name = "load_pictures">{% csrf_token %}
+    <button id = "load_pictures"> Load pictures </button>
+    <button id = "clear_pictures"> Clear pictures </button>
+  </form>
+
+  </div>
+ 
+  <button id = "files_button" onclick = "location.href = {% url 'files'%}"> <div id = "file_id"> Files for loading </div> <img class ="button_icon" src = "/static/images/icons/file.png" /> </button>
+{% endblock %}
+{% block script %}
+  <script>
+  
+  function sql_set_visibillity() {
+  var elem = document.getElementById("sql_server_checkbox")
+  checked = elem.checked
+  if (checked) {
+  $("#sql_settings").show()
+  }
+  else {
+  $("#sql_settings").hide()
+  }
+  }
+  function postgres_set_visibility() {
+  var elem = document.getElementById("postgres_checkbox")
+  checked = elem.checked
+  if (checked) {
+  $("#postgres_settings").show()
+  }
+  else {
+  $("#postgres_settings").hide()
+  }
+  }
+   $("#sql_settings").hide()
+  function setStatus(status_text,color){
+  $("#status_bar").css("color",color);
+  $("#status_bar").text(status_text);
+  }
+  function checkFile(){
+  var size = document.forms["fl_form"]["my_file"].files.length;
+  if (size != 0) {
+  return true;
+  }
+  else {
+  setStatus("You did'nt choose the file or files!","red");
+  return false;
+  }
+  }
+  function check_file_topics() {
+  var size = document.forms["topics_loading_form"]["topics_file"].files.length;
+  if (size != 0) {
+  return true;
+  }
+  else {
+  setStatus("You didn't choose the file or files!","red");
+  return false;
+  }
+  }
+ function check_file_essays() {
+  var size = document.forms["essays_loading_form"]["essays_file"].files.length;
+  if (size != 0) {
+  return true;
+  }
+  else {
+  setStatus("You didn't choose the file or files!","red");
+  return false;
+  }
+  }
+
+   function check_file_grammar() {
+  var size = document.forms["grammar_loading_form"]["grammar_file"].files.length;
+  if (size != 0) {
+  return true;
+  }
+  else {
+  setStatus("You didn't choose the file or files!","red");
+  return false;
+  }
+  }
+
+  function fl_setVisibility() {
+  var form = document.getElementById("fl_form");
+  var visibility = form.style.visibility;
+  var button = document.getElementById("fl_button_hide_unhide");
+  var panel = document.getElementById("fl_main_panel");
+  $("#fl_form").toggle()
+  $("#settings_section_file").toggle()
+  if (button.innerHTML == "&lt;&lt;&lt;") {
+  button.innerHTML = ">>>"
+  }
+  else {
+  button.innerHTML = "<<<";
+  }
+  }
+  function dict_visibility() {
+  var form = document.forms["dict_form"];
+  var button = document.getElementById("dict_button_hide_unhide")
+  $("#settings_section_dict").toggle()
+  $("#dict_form").toggle()
+  if (button.innerHTML == "&lt;&lt;&lt;") {
+  button.innerHTML = ">>>"
+  }
+  else {
+  button.innerHTML = "<<<";
+  }
+  }
+
+  function build_font_choice() {
+  fonts = get_list_of_fonts()
+  select_element = document.getElementById("font_style")
+  for (var x in fonts) {
+  new_option = document.createElement("option")
+  new_option.setAttribute("value", fonts[x])
+  new_option.innerHTML = fonts[x]
+  select_element.appendChild(new_option)
+  }
+  }
+  function build_font_color_choice() {
+  colors = get_list_of_font_colors()
+  select_element = document.getElementById("font_color")
+  for (var x in colors) {
+  new_option = document.createElement("option")
+  new_option.setAttribute("value", colors[x])
+  new_option.style.color = colors[x]
+  new_option.innerHTML = x
+  select_element.appendChild(new_option)
+  }
+  }
+  function build_background_color_choice() {
+  colors = get_list_of_font_colors()
+  select_element = document.getElementById("background_color")
+  for (var x in colors) {
+  new_option = document.createElement("option")
+  new_option.setAttribute("value", colors[x])
+  new_option.style.backgroundColor = colors[x]
+  new_option.innerHTML = x
+  select_element.appendChild(new_option)
+  }
+  }
+  function get_list_of_fonts() {
+  fonts = []
+  fonts.push("Default")
+  fonts.push("Areal")
+  fonts.push("Times")
+  fonts.push("Courier")
+  fonts.push("Courier New")
+  fonts.push("Verdana")
+  return fonts
+  }
+  function get_list_of_font_colors() {
+  colors = {}
+  colors["Default"] = ""
+  colors["Red"] = "red"
+  colors["Green"] = "green"
+  colors["Blue"] = "blue"
+  colors["Yellow"] = "yellow"
+  return colors
+  }
+
+  function load_pictures() {
+  event.preventDefault()
+  var xhr = new XMLHttpRequest()
+  var fd = new FormData(document.forms["load_pictures"])
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+       if (this.status != 200) {
+         resp = this.responseText
+         console.log(resp)
+       } 
+    }
+  }
+  var url = location.href
+  xhr.open("POST",url,true)
+  xhr.setRequestHeader("operation", "load_pictures")
+  xhr.send()
+  }
+
+  function clear_pictures() {
+  event.preventDefault()
+  var conf = confirm("Are you sure?")
+  if (conf == true) {
+  var xhr = new XMLHttpRequest()
+  var fd = new FormData(document.forms["load_pictures"])
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+       if (this.status != 200) {
+         resp = this.responseText
+         console.log(resp)
+       } 
+    }
+  }
+  var url = location.href
+  xhr.open("POST",url,true)
+  xhr.setRequestHeader("operation", "clear_pictures")
+  xhr.send()
+  }
+ }
+  
+ function load_all_data() {
+   ajax_post("all_data_form","load_all_data")
+}
+
+  function setEvents(){
+  $("#load_all_data").click(load_all_data)
+  $("#load_pictures").click(load_pictures)
+  $("#clear_pictures").click(clear_pictures)
+  $("#fl_button_hide_unhide").click(fl_setVisibility)
+  $("#dict_button_hide_unhide").click(dict_visibility)
+  $("#sql_server_checkbox").click(sql_set_visibillity)
+  $("#postgres_checkbox").click(postgres_set_visibility)
+  document.forms["fl_form"]["my_file"].addEventListener("change", function(){
+  setStatus("","green");
+  }
+  )}
+  function apply_styles() {
+  var xhr = new XMLHttpRequest()
+  var url = document.location.href
+  var style_form = document.forms["dict_form"]
+  var fd = new FormData(style_form)
+  xhr.onreadystatechange = function() {
+  if (this.readyState == 4) {
+  if (this.status == 200) {
+  console.log("The style has been send to the server!")
+  }
+  }
+  }
+  xhr.open("POST",url)
+  xhr.send(fd)
+  }
+  $(document).ready(function(){
+  setEvents()
+  });
+  </script>
+{% endblock %}

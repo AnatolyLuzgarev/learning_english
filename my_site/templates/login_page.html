@@ -1,0 +1,70 @@
+<!-- {% extends "base_page.html" %} -->
+{% load static %}
+
+<html>
+<head>
+<!-- {% block styles %} -->
+ <link rel = "stylesheet" type = "text/css" href = "/static/css/bootstrap.min.css">
+ <script src = "/static/js/bootstrap.min"></script>
+<style>
+.form_label {
+	display: inline-block;
+	width: 100px;
+	margin: 5px;
+	font-size: 20px;
+}
+.form_field {
+	left: 10%;
+	width: 200px;
+	margin: 5px;
+	height: 20px;
+}
+#main_form {
+	position: absolute;
+	left: 5%;
+}
+#button_login {
+	width: 100px;
+	height: 30px;
+}
+
+#login_form {
+   position: fixed;
+   width: 25%;
+   left: 35%;
+   top: 20%;
+   padding: 50px;
+   background-color: rgb(250,250,250);
+
+}
+#info {
+  color: red;
+}
+
+
+
+</style>
+<!-- {% endblock %} -->
+</head>
+<body>
+<!-- {% block content %} -->
+<div id = "main_form">
+  <form id = "login_form" method = "post">
+    <p id = "info"> {{info}}</p>
+  <div class = "form-group">
+  <label for = "login" class = "form_label"> Login </label>
+  <input name = "login" class = "form_control"/>
+</div>
+ <div class = "form-group">
+  <label for = "password" class = "form_label"> Password </label>
+  <input type = "password" name = "password" class = "form_control" id = "pwd"/>
+</div>
+  <button class = "btn btn-primary" id = "button_login"> Log in </button>
+  <a href = {% url 'register' %}> Register </a>
+  {% csrf_token %}
+  </form>
+ </div>
+<!-- {% endblock %} -->
+
+</body>
+</html>

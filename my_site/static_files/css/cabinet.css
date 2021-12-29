@@ -1,0 +1,91 @@
+#cabinet_container {
+   width: 60%;
+}
+#header_cabinet {
+  width: 100%;
+  height: 40px;
+  font-size: 25px;
+  padding: 10px;
+  text-align: center;
+  font-family: cursive;
+}
+
+#settings_container {
+ width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#training_container {
+ width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#user_log_container {
+width: 100%;
+padding: 10px;
+border-radius: 10px;
+margin-top: 10px;
+margin-bottom: 10px;
+}
+
+#user_log_container .td_date {
+	width: 25%;
+}
+
+#user_log_container .td_event {
+	width: 75%;
+}
+
+#table_header {
+  font-size: 20px;
+}
+
+table {
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 10px
+  padding: 10px;
+  font-size: 20px;
+}
+
+td {
+  padding: 5px;
+}
+
+button {
+  font-size: 15px;
+}
+
+.cabinet_label {
+  font-weight: 100;
+  font-size: 25px;
+  padding-bottom: 10px;
+}
+
+button {
+  border-radius: 8px;
+  font-size: 15px;
+  padding: 5px;
+}
+
+.cabinet_ref, .cabinet_ref:visited {
+  font-size: 20px;
+  font-family: cursive;
+  margin-left: 5px;
+}
+
+
+.cabinet_input {
+ font-size:20px;
+}
+
+.cabinet_subsection {
+  font-size: 20px;
+}
+

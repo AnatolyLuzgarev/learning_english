@@ -1,0 +1,84 @@
+{% extends "base_page.html" %}
+
+        {% block styles %}
+        <style>
+        #current_word {
+            padding: 20px;
+            font-size: 50px;
+            display: inline-block;
+            width: 500px;
+        }
+        .button_next_categories {
+            background-color: white;
+            width: 50px;
+            height: 20px;
+        }
+        </style>
+        {% endblock %}
+
+
+      {% block content %}
+          <div id = "training_container">
+            <form name = "training_settings_form" method = "post" action = "#" onsubmit="return checkForm()">{% csrf_token %}
+                <label class = "settings_label" for = "category"> Category:</label>
+                <select id = "category" name = "category">
+                    {% for category in categories_list %}
+                        <option value = {{category}}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <button id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+            </form>
+            <div id = "training_panel">
+               <div id = "current_word"> <label id = "current_word_label"></label> </div>
+               <button id = "button_next_categories"> Next </button> 
+            </div>
+           </div> 
+        {% endblock %}
+
+     {% block script %}
+        <script>
+        var words = []
+        var current_index = 0
+
+        function get_words() {
+            current_index = 0
+             $("#training_panel").show()
+            var fd = new FormData(document.forms["training_settings_form"])
+            var xhr = new XMLHttpRequest()
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                var response = xhr.responseText
+                json_object = JSON.parse(response)
+                words = json_object.words
+                set_next_word()
+                }
+            }
+            url_str = window.location.href
+            xhr.open("POST",url_str)
+            xhr.send(fd)
+        }
+
+        function set_next_word() {
+            if (current_index < words.length - 1) {
+                var elem = document.getElementById("current_word_label")
+                elem.innerHTML = words[current_index]
+                current_index++
+            }
+        }
+        
+        $(document).ready(function(){
+        $("#button_begin").click(function(){
+        event.preventDefault()
+        $("#training_field_ws").css("visibility","visible")
+        get_words()
+        })
+        $("#button_next_categories").click(
+            function() {
+                set_next_word()
+            }
+        )
+        $("#training_panel").hide()
+        })
+        </script>
+        {% endblock %}
+   

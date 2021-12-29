@@ -1,0 +1,202 @@
+{% extends "base_page.html" %}
+{% block styles %}
+  <style>
+  
+  </style>
+{% endblock %}
+{% block content %}
+  <div id = "training_container">
+    <form class = "training_form" id = "training_form" method = "post" action = "#" onsubmit="return checkForm()">
+      {% csrf_token %}
+      <label for = "quantity" class = "settings_label">Quantity of words:</label>
+      <input id = "quantity" class = "settings_field" name = "quantity" type = "text" value = "10"/>
+      <label for = "letter" class = "settings_label">First letter:</label>
+      <select id = "letter" name = "letter">
+        <option value = "all" >All</option>
+        {% for letter in letters %}
+          <option value = {{letter.lower}} >{{letter.upper}}</option>
+        {% endfor %}
+      </select>
+      <label for = "training_words" class = "settings_label"> Training words </label>
+      <input type = "checkbox" id = "training_words" class = "settings_field" name = "training_words"/>
+      <label for = "show_picture" class = "settings_label"> Show picture </label>
+      <input type = "checkbox" id = "show_picture" class = "settings_field" name = "show_picture"/>
+      <button type = "button" id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+    </form>
+    <div id = "training_field_" class = "training_field_">
+      
+      <div id = "word_container">
+        <p id = "word"></p>
+        <p id = "answer">     
+               </p>
+      </div>
+      <div id = "container_buttons">
+        <button id = "button_show" class = "button_show"> ? </button>
+        <button id = "button_send" class = "button_send"> Send to training </button>
+        <button id = "button_skip" class = "button_skip"> Skip </button>
+        <button id = "button_next" class = "button_next">  Next > </button>
+      </div>
+      </div>
+
+    <div id = "word_picture_training">
+        <img id = "word_picture" src = ""/>
+      </div>
+
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+  var questions = [];
+  var current_word = "";
+  var current_answer = "";
+  var current_number = 0;
+  var quantity_of_words = 0;
+  var right_answers = 0;
+  var test_is_active = true;
+  ////////////////////////////////////////////
+
+  function set_picture() {
+  var img_element = document.getElementById("word_picture")
+  img_element.src = questions[current_number]["picture_url"]
+  }
+  ////////////////////////////////////////////////
+  function picture_checked() {
+  var pict = document.getElementById("show_picture")
+  var checked = pict.checked
+  return checked
+  }
+  /////////////////////////////////////////
+
+  function nextQuestion() {
+  if (current_number == quantity_of_words - 1) {
+  $("#button_next").text("Complete>");
+  };
+  if (current_number == quantity_of_words) {
+  $("#word").text("Test is completed!");
+  showRightAnswers();
+  text = "'Word-Translation with' with " + String(quantity_of_words) + " words";
+  log_training("Word-Translation",0,quantity_of_words)
+  test_is_active = false;
+  return;
+  };
+  var word = questions[current_number].word;
+  var answer = questions[current_number].translation;
+  $("#word").text(word);
+  $("#answer").text(" ");
+  if (picture_checked()) {
+  set_picture()
+  }
+  current_word = word;
+  current_answer = answer;
+  current_number++;
+  }
+  //////////////////////////////////////////////////////////
+  function showRightAnswers() {
+  var msg = "Quantity of right answers: ";
+  $("#answer").text(msg + right_answers.toString() + " from "+quantity_of_words.toString());
+  }
+  /////////////////////////////////////////////////
+  function getQuestions() {
+  var fd = new FormData(document.forms["training_form"]);
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+  if (this.readyState == 4) {
+  var response = xhr.responseText;
+  response = response.replace(/False/g,'"False"');
+  response = response.replace(/True/g,'"True"');
+  var response_format = '{"array":'+response.replace(/'/g, '"')+'}';
+  json_object = JSON.parse(response_format);
+  var objects_array = json_object.array;
+  questions = objects_array;
+  quantity_of_words = questions.length;
+  nextQuestion();
+  };
+  };
+  url_str = window.location.href;
+  xhr.open("POST",url_str);
+  xhr.send(fd);
+  }
+  /////////////////////////////////////////////////////
+  function send_word_to_training(word) {
+  var xhr = new XMLHttpRequest()
+  var fd = new FormData(document.forms[0])
+  fd.append("words_to_training","["+ questions[current_number - 1].id.toString() + "]")
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status != 200) {
+        alert("The word wasn't sent. Some error on server occured!")
+        console.log(this.responseText)
+      }
+      }
+  }
+  var url = "http://" + location.host + "/dictionary/"
+  xhr.open("POST",url,true)
+  xhr.setRequestHeader("operation", "words_to_training")
+  xhr.send(fd)
+  }
+  ////////////////////////////////////////////////////
+  $(document).ready(function(){
+  $("#button_send").click(function() {
+     send_word_to_training()
+  });
+
+
+
+  $("#button_begin").click(function(){
+  event.preventDefault();
+  if (picture_checked()) {
+  document.getElementById("word_picture").style.display = "block"
+  }
+  
+  test_is_active = true;
+  if ((current_word != "")) {
+  var is_sure = confirm("Previous test is not completed. Start new test?");
+  if (!is_sure) {
+  return;
+  }
+  else {
+  current_word = "";
+  current_number = 0;
+  current_answer = "";
+  right_answers = 0;
+  $("#button_next").text("Next");
+  }
+  }
+  var quantity = $("#quantity").val();
+  if (isNaN(quantity)) {
+  alert("Please, enter a number into the quantity field!");
+  }
+  else {
+  $("#training_field").css("visibility","visible");
+  getQuestions();
+  };
+  });
+  $("#button_next").click(function(){
+  event.preventDefault();
+  if (test_is_active) {
+  right_answers++;
+  nextQuestion();
+  }
+  else {
+  //Proposal about beginning new test
+  var begin_test = confirm("Test is completed. Do you want to begin a new one?");
+  if (begin_test) {
+  $("#button_begin").click();
+  }
+  }
+  });
+  $("#button_skip").click(function(){
+  nextQuestion();
+  });
+  $("#button_show").click(function() {
+  $("#answer").text(current_answer);
+  });
+  $("#w_t_training_input").keyup(function(event) {
+  if (event.keyCode == 13) {
+  $("#button_next").click();
+  }
+  })
+  });
+  </script>
+{% endblock %}

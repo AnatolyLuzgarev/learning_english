@@ -1,0 +1,51 @@
+{% extends "base_page.html" %}
+
+
+		{% block styles %}
+		<style>
+           #cookies {
+           	 background-color: red;
+           	 transition: 1.0s;
+           }
+           #cookies:hover {
+           	background-color: green;
+           }
+		</style>
+	    {% endblock %}
+
+		
+		{% block content %}
+
+    <div id = "week_days">       
+    <ul>
+     {% for day in week_days %}
+     <li>    
+
+
+     </li>
+     {% endfor %}
+	</ul>
+	</div>
+
+
+		{% endblock %}
+
+
+{% block script %}
+<script>
+
+		function setCurrentTime() {
+			var elem = document.getElementById("time_panel");
+			var elem_date = document.getElementById("date_panel");
+			var current_date = new Date();
+			var time_string = current_date.toLocaleTimeString();
+			var date_string = current_date.toLocaleDateString();
+			elem_date.innerHTML = date_string;
+			elem.innerHTML = time_string;
+		}
+		$(document).ready(function() {
+		var sheduler = setInterval(setCurrentTime, 1000);
+		});
+		</script>
+{% endblock %}
+	

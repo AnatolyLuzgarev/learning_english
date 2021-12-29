@@ -1,0 +1,182 @@
+{% extends "base_page.html" %}
+{% block content %}
+	<div id = "dictionary">
+		<div id = "letters_list">
+			{% for letter in letters_list %}
+				<a class = "letter" href = "http://127.0.0.1:8000/dictionary/{{letter}}">{{letter}}</a>
+			{% endfor %}
+			    <a class = "letter" href = {% url 'dictionary' %}>.....All</a>
+			    <a class = "letter" href = "http://127.0.0.1:8000/dictionary/training">     Training</a>
+		</div>
+		<table id = 'dictionary_table' {{dictionary_style}}>
+			<tr id = 'dictionary_table_head'><td>Word</td><td>Translating</td><td>Transcription </td></tr>
+			{% for word in words_list %}
+				<tr class = 'dictionary_row'>
+					<td class = "id_column" style = "display: none">{{word.id}}</td>
+					<td class = 'word_column'>{{word.word}}</td>
+					{% if word.translation != "nan" %}
+					<td class = 'translating_column'>{{word.translation}}</td>
+					{% else %}
+                    <td class = 'translating_column'></td>
+					{% endif %}
+					{% if word.transcription != "nan" %}
+					<td class = 'transcription_column'>{{word.transcription}}</td>
+					{% else %}
+                    <td class = 'transcription_column'></td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
+	<div id = "dictionary_settings" style = "position: fixed">
+		<div id = "settings_label"> Dictionary settings </div>
+		<ul>
+			<li><button class = "settings_button" id = "hide_translation"> Hide translation </button></li>
+			<li><button class = "settings_button" id = "upload_picture"> Upload picture from file</button></li>
+			<li><button class = "settings_button" id = "upload_picture_url"> Upload picture from url</button></li>
+			<li id = "url_input"><label for = ""></label><input type = "text" name = "picture_url" id = "picture_url"/><button id = "send_button"> Send </button></li>
+			<li><button class = "settings_button" id = "send_to_training"> Send to the training </button></li>
+		</ul>
+		<br/>
+		<!-- <textarea>  </textarea><br/> -->
+		<form name = "words_tr">{% csrf_token %}<input type="hidden" name = "words_to_training">  </input>
+		<input type="file" name = "picture_file" style = "display: none">
+		<input name = "picture_word" type = "hidden"/>
+		<input name = "picture_translation" type = "hidden"/>
+		<input name = "picture_url" type = "hidden"/>
+	</form>
+</div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+var words_to_training = [];
+$(document).ready(function() {
+////////////////////////////////////////////////////
+$("#dictionary_settings #hide_translation").click(
+function() {
+if ($(".translating_column").css("color") == "rgb(0, 0, 0)") {
+$(".translating_column").css("color","white")
+}
+else {
+$(".translating_column").css("color","black")
+}})
+////////////////////////////////////////////////////
+document.forms["words_tr"]["picture_file"].addEventListener("change", upload_picture)
+function upload_picture() {
+var my_form = document.forms["words_tr"]
+var fd = new FormData(my_form)
+var xhr = new XMLHttpRequest()
+xhr.onreadystatechange = function() {
+if (xhr.readyState == 4) {
+if (xhr.status != 200) {
+	alert("The picture wasn't uploaded into the server!: " + xhr.responseText)
+}
+else {
+	console.log(xhr.responseText)
+}
+}}
+var url = location.href
+xhr.open("POST",url)
+xhr.setRequestHeader("operation", "picture_uploading")
+xhr.send(fd)
+}
+function upload_picture_url() {
+var my_form = document.forms["words_tr"]
+my_form["picture_url"].value = document.getElementById("picture_url").value
+var xhr = new XMLHttpRequest()
+var fd = new FormData(my_form)
+xhr.onreadystatechange = function() {
+if (xhr.readyState == 4) {
+if (xhr.status == 200) {
+	console.log("The picture was uploaded!")
+}
+else
+{
+alert("The picture wasn't uploaded!: " + xhr.responseText)
+}
+	}
+}
+var url = location.href
+xhr.open("POST",url)
+xhr.setRequestHeader("operation", "picture_uploading")
+xhr.send(fd)
+}
+////////////////////////////////////////////////////
+$("#upload_picture").click(function() {
+if (words_to_training.length == 0) {
+alert("Word is not selected!")
+return
+}
+if (words_to_training.length > 1) {
+alert("Only one word must be selected!")
+return
+}
+var my_form = document.forms["words_tr"]
+my_form["picture_file"].click()
+})
+$("#upload_picture_url").click(function() {
+if (words_to_training.length == 0) {
+alert("Word is not selected!")
+return
+}
+if (words_to_training.length > 1) {
+alert("Only one word must be selected!")
+return
+}
+$("#url_input").toggle()
+})
+$("#send_button").click(function() {
+var url = document.getElementById("picture_url").value
+if (url == "") {
+alert("The url must be specified!")
+return
+}
+upload_picture_url()
+})
+///////////////////////////////////////////////////
+$("#dictionary_table tr").click(
+function() {
+	var current_text = this.children[0].innerText
+	//Setting word and translation for uploading picture
+	var word_picture = this.children[0].innerText
+	var word_translation = this.children[1].innerText
+	document.forms["words_tr"]["picture_word"].value = word_picture
+	document.forms["words_tr"]["picture_translation"].value = word_translation
+	if ($(this).css("background-color")!="rgb(220, 220, 220)") {
+		$(this).css("color","red")
+		$(this).css("background-color","rgb(220,220,220)")
+		words_to_training.push(current_text)
+}
+	else {
+		$(this).css("color","rgb(0,0,0)")
+		$(this).css("background-color","rgb(255,255,255)")
+		var ind = words_to_training.indexOf(current_text)
+	if (ind != -1) {
+	words_to_training.splice(ind,1)
+}}})
+/////////////////////////////////////////////////
+$("#dictionary_settings #send_to_training").click(
+function(){
+if (words_to_training.length == 0) {
+alert("Words are not selected!")
+return
+}
+document.forms["words_tr"]["words_to_training"].value = "[" + words_to_training.toString() + "]"
+var fd = new FormData(document.forms["words_tr"])
+var xhr = new XMLHttpRequest()
+url_str = window.location.href
+xhr.onreadystatechange = function() {
+if (this.readyState == 4) {
+console.log(this.responseText)
+}
+}
+xhr.open("POST", url_str)
+xhr.setRequestHeader("operation", "words_to_training")
+xhr.send(fd)
+}
+)
+}
+)
+</script>
+{% endblock %}

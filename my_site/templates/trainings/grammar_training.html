@@ -1,0 +1,109 @@
+{% extends "base_page.html" %}
+
+
+      {% block content %}
+      <div id = "training_container">
+      <form>
+        {% csrf_token %}
+        <label for = "section" class = "settings_label"> Select the grammar section: </label>
+        <select id = "section" name = "section">
+        {% for grammar_section in grammar_sections %}
+          <option value = {{grammar_section.val}}>{{grammar_section.repr}}</option>
+        {% endfor %}
+
+        </select>
+     <!--    <input id = "grammar_training_begin" type = "button" value = "Begin training"/> -->
+        <button id = "grammar_training_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+      </form>
+        <div id = "grammar_pane">
+        
+        <div id = "grammar_title">
+          </div>
+        <div id = "grammar_task">
+          </div>
+        <div id = "grammar_example" style = "padding: 10px 10px 10px 10px">
+          </div>
+        <textarea>
+        </textarea>
+
+
+      </div>
+    </div>
+ {% endblock %}
+
+{% block script %}
+  <script>
+  $(document).ready(function() {
+  $("#grammar_pane").hide()
+  $("#grammar_pane").keypress(function(event) {
+  if (event.keyCode == 13 && !event.shiftKey) {
+  $("#grammar_training_begin").click()
+  }
+  })
+  $("#grammar_training_begin").click(function() {
+  event.preventDefault()
+  var data = new FormData(document.forms[0])
+  var xhr = new XMLHttpRequest()
+  xhr.onreadystatechange = function() {
+     if (xhr.readyState == 4) {
+       response = this.responseText
+       obj = JSON.parse(response)
+       rule = obj["rule"]
+        title = ""
+        example = "";
+       set_grammar_training(title, rule, example)
+     }
+   }
+  var url = "http://" + location.host + "/trainings/grammar_training"
+  xhr.open("POST",url,true)
+  xhr.send(data)
+
+
+  // var elem = document.createElement("div")
+  // $.ajax({
+  // type: "POST",
+  // data: data,
+  // processData: false,
+  // contentType: false,
+  // url: url,
+  // success: function(result) {
+  // var res = result
+  // // var parser = new DOMParser()
+  // // var doc = parser.parseFromString(result, "text/html")
+  // // var content_grammar = doc.getElementById("content_panel")
+  // // var my_list = content_grammar.children[0]
+  // // var len = my_list.childElementCount
+  // // var rand = Math.floor(Math.random() * Math.floor(len));
+  // // var elem = my_list.children[rand]
+  // // var title = elem.children[0].innerHTML
+  // // var len_sect = elem.children[1].childElementCount
+  // // var rand = Math.floor(Math.random() * Math.floor(len_sect));
+  // // var elem_sect = elem.children[1].children[rand]
+  // // var grammar_rule = elem_sect
+  // // var rule = grammar_rule.children[0].innerHTML.trim()
+  // // rule = res
+  // // console.log(rule)
+  // // rule = rule.replace(/<br>/g, "<br/>");
+  // //We don't have an example in some cases
+  // // if (grammar_rule.childElementCount > 1) {
+  // // var example = grammar_rule.children[1].innerHTML.trim()
+  // // example = example.replace(/<br>/g, "<br/>");
+  // // }
+  // // else {
+
+  // // }
+  // // set_grammar_training(title, rule, example)
+  // }
+  // })
+  })
+  }
+  )
+  function set_grammar_training(title, clause, example) {
+    $("#grammar_title").text(title)
+    $("#grammar_task").html(clause)
+    $("#grammar_example").html(example)
+    $("#grammar_pane textarea").val("")
+    $("#grammar_pane").show()
+  }
+  </script>
+{% endblock %}

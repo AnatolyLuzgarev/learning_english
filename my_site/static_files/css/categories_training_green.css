@@ -1,0 +1,145 @@
+
+#training_container {
+	width: 60%;
+}
+
+#training_container form {
+padding: 15px;
+background-color: rgba(150,220,170,0.5);
+color: black;
+width: 100%;
+
+}
+
+#word {
+	font-size: 35px;
+}
+
+#button_begin {
+	position: relative;
+	top: 5px;
+	font-size: 20px;
+	display: inline-block;
+	width:  150px;
+	height:  40px;
+	border-radius: 10px;
+}
+
+
+.settings_label {
+	font-size: 20px;
+}
+
+#category, #subject, #paragraph {
+	display: inline-block;
+	font-size: 20px;
+	height: 35px;
+	width: 200px;
+}
+
+#grammar_pane {
+	margin: 10px 10px 10px 10px; 
+	height: 70%;
+}
+
+
+#grammar_pane textarea {
+	width: 100%; 
+	height: 200px; 
+	font-size: 25px;
+}
+
+#grammar_task {
+	padding: 10px 10px 10px 10px;
+	 font-size: 30px;
+}
+
+#grammar_title {
+padding: 10px 10px 10px 10px;
+ font-size: 18px;
+} 
+
+#training_panel textarea {
+	width: 100%;
+	height: 200px;
+	font-size: 25px;
+}
+
+.training_button {
+  height: 45px;
+  font-size: 18px;
+}
+
+#word_container {
+	display: inline-block;
+	width: 700px;
+	height: 100px;
+
+}
+
+#training_input {
+	font-size: 25px;
+}
+
+#training_buttons {
+	position: relative;
+	top: -20px;
+	display: inline-block;
+	padding: 10px;
+}
+
+/* ///////////////////////////////////////////////////// */
+
+
+#grammar_training_begin {
+	font-size: 20px;
+	display: inline-block;
+	width:  150px;
+	height:  35px;
+}
+
+.settings_label {
+	font-size: 25px;
+}
+
+#section {
+	display: inline-block;
+	font-size: 20px;
+	height: 35px;
+	width: 400px;
+}
+
+#grammar_pane {
+	margin: 10px 10px 10px 10px; 
+	height: 70%;
+}
+
+
+#grammar_pane textarea {
+	width: 100%; 
+	height: 200px; 
+	font-size: 25px;
+}
+
+#grammar_task {
+	padding: 10px 10px 10px 10px;
+	 font-size: 30px;
+}
+
+#grammar_title {
+padding: 10px 10px 10px 10px;
+ font-size: 18px;
+} 
+
+  #button_icon_id {
+        max-height: 30px;
+        max-width: 30px;
+     }
+    #button_id {
+      display: inline-block;
+      position: relative;
+      top: -8px;
+     }
+
+
+

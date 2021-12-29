@@ -1,0 +1,67 @@
+{% extends "base_page.html" %}
+{% load static %}
+{% block content %}
+    <!--We will use relative links in the list of trainings-->
+    <ul id = "trainings_list">
+        <li id = "word_translation" >
+            <a href = "word_translation">
+                <img class = "training_image" src = "/static/images/word_translation.jpg"/>
+                <p> Word - Translation </p>
+            </a>
+        </li>
+        <li id = "translation_word">
+            <a href = "translation_word">
+                <img class = "training_image" src = "/static/images/translation_word.jpg"/>
+                <p> Translation - Word </p>
+            </a>
+        </li>
+        <li id = "make_a_sentence">
+            <a href = "make_a_sentence">
+                <img class = "training_image" src = "/static/images/sentence_making.jpg"/>
+                <p> Make a sentence </p>
+            </a>
+            
+        </li>
+        <li id = "phrasal_verbs" >
+            <a href = "phrasal_verbs">
+                <img class = "training_image" src = "/static/images/phrasal_verbs.jpg"/>
+                <p> Phrasal verbs training </p>
+            </a>
+        </li>
+        <li id = "words_series" >
+            <a href = "words_series">
+                <img class = "training_image" src = "/static/images/clock.jpg"/>
+                <p> Words series training </p>
+            </a>
+        </li>
+        <li id = "essay_writing" >
+            <a href = "essay_writing">
+                <img class = "training_image" src = "/static/images/essay.jpg"/>
+                <p> Essay writing </p>
+            </a>
+        </li>
+        <li id = "grammar_training" >
+            <a href = "grammar_training">
+                <img class = "training_image" src = "/static/images/grammar.jpg"/>
+                <p> Grammar training </p>
+            </a>
+        </li>
+        <li id = "categories_training" >
+            <a href = "categories_training">
+                <img class = "training_image" src = "/static/images/categories_training.jpg"/>
+                <p> Categories training </p>
+            </a>
+        </li>
+        <li id = "topics_training" >
+            <a href = "topics_training">
+                <img class = "training_image" src = "/static/images/topics_training.jpg"/>
+                <p> Topics training </p>
+            </a>
+        </li>
+    </ul>
+{% endblock %}
+{% block script %}
+    <script>
+    $("#word_translation").click();
+    </script>
+{% endblock %}

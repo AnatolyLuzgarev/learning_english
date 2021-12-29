@@ -1,0 +1,93 @@
+{% extends "base_page.html" %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+<div id = "translator_container">
+  <div id = "translator_header"> 
+ <p> Offline translator </p>
+   </div>
+  <div id = "word_container">
+    <form>
+      {% csrf_token %}
+      <input id = "word" type="text" name="word">
+      <button id = "translate_id"> Translate </button>
+      <button id = "training_id"> Add to training </button>
+    </form>
+  </div>
+
+  <div id = "translation_container">
+
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+
+id_list = []
+
+function translate() {
+var xhr = new XMLHttpRequest()
+fd = new FormData(document.forms[0])
+xhr.onreadystatechange = function() {
+   if (this.readyState == 4) {
+   	  var resp = this.responseText
+   	  process_response(resp)
+	}
+}
+var word = $("#word").val()
+var url = "http://" + location.host + "/api/get_translation/" + word +"/"
+xhr.open("GET",url, true)
+xhr.send(fd)
+}
+
+function process_response(response) {
+	obj = JSON.parse(response)
+	translation_array = obj["translation"]
+	words = ""
+	for (var word in translation_array) {
+		words = words + translation_array[Number(word)]["translation"] + ", "
+		words = words.substring(0, words.length - 2)
+    id_list.push(translation_array[Number(word)]["id"])
+	}
+	var elem = document.getElementById("translation_container")
+   	elem.innerHTML = words
+    }
+
+function add_to_training() {
+var xhr = new XMLHttpRequest()
+fd = new FormData(document.forms[0])
+fd.append("words",JSON.stringify(id_list))
+xhr.onreadystatechange = function() {
+   if (this.readyState == 4) {
+     if (this.status != 200) {
+      response = this.responseText
+      console.log(response)
+     }
+  }
+}
+var word = $("#word").val()
+var url = location.href
+xhr.open("POST",url, true)
+xhr.send(fd)
+
+
+
+}
+
+$("#translate_id").click(function() {
+ event.preventDefault()
+ translate()	
+})
+
+$("#training_id").click(function() {
+ event.preventDefault()
+ add_to_training() 
+})
+
+</script>
+{% endblock %}

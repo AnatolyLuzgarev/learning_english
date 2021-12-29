@@ -1,0 +1,33 @@
+{% extends "base_page.html" %}
+
+
+{% block styles %}
+<style>
+.theme {
+	font-size: 20px;
+}
+
+.essay {
+	font-family: cursive;
+	font-size: 20px;
+}
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+{% for elem in essays_list %}
+  <p class = "theme"> {{elem.theme}} </p>
+  <p class = "essay">{{elem.essay}}</p>
+  <hr/>
+
+{% endfor %}
+
+{% endblock %}
+
+
+{% block script %}
+
+{% endblock %}

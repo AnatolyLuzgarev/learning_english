@@ -1,0 +1,92 @@
+#dictionary {
+position: absolute;
+border-width: 2px 2px 2px 2px;
+border-style: solid;
+margin: 2px 2px 2px 2px;
+padding: 10px 10px 10px 10px;
+width: 75%;
+}
+#dictionary_table {
+width: 100%;
+}
+#letters_list a:hover {
+padding: 2px;
+font-family: cursive;
+}
+#dictionary_table_head {
+font-size: 30px;
+}
+table {
+border-collapse: collapse;
+}
+.dictionary_row {
+margin: 10px 10px 10px 10px;
+font-size: 20px;
+font-family: Verdana;
+}
+#first_letter {
+font-size: 25px;
+}
+#letters_list {
+font-size: 20px;
+padding: 2px;
+font-family: cursive;
+}
+
+#dictionary_settings {
+width: 18%;
+right: 10px;
+}
+
+#dictionary_settings ul {
+list-style-type: none;
+}
+
+.settings_button {
+height: 30px;
+width: 180px;
+border-radius: 10px;
+padding: 5px;
+margin: 5px;
+}
+.word_column {
+width: 25%;
+}
+.translating_column {
+width: 35%;
+}
+.transcription_column {
+width: 30%;
+}
+#first_letter td {
+padding: 2px;
+margin: 0px;
+border-width: 0px;
+border-collapse: collapse;
+}
+.dictionary_row:hover {
+font-size: 20px;
+font-family: Verdana;
+}
+.dictionary_row td {
+padding-top: 2px;
+padding-bottom: 2px;
+padding-left: 5px;
+padding-right: 5px;
+}
+#letters_list a {
+padding: 2px;
+}
+#dictionary_settings textarea {
+position: relative;
+margin-top: 10px;
+height: 700px;
+width: 95%;
+}
+#settings_label {
+margin: 10px;
+font-size: 25px;
+}
+#url_input {
+	display: none;
+}

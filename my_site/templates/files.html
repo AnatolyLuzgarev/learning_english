@@ -1,0 +1,27 @@
+{% extends "base_page.html" %}
+
+
+{% block styles %}
+
+{% endblock %}
+
+
+{% block content %}
+   <h1> List of files: </h1>
+   <ul>
+   	{% for file in files_list %}
+
+      <li><a href = {% url 'get_file' file %}> {{file}} <a></li>
+
+   	{% endfor %}
+   </ul>
+
+ <button> Load new file </button>
+
+{% endblock %}
+
+
+{% block script %}
+	<script>
+	</script>
+{% endblock %}

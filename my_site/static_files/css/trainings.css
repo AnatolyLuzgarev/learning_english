@@ -1,0 +1,62 @@
+.training_settings_form, #training_field {
+border-style: solid;
+border-color: grey;
+border-radius: 10px;
+padding: 10px;
+width: 900px;
+height: auto;
+background-color: rgba(150,220,170,0.5);
+}
+.training_field_form {
+border-style: solid;
+border-color: grey;
+border-radius: 10px;
+padding: 10px;
+width: 900px;
+background-color: rgba(150,220,170,0.5);
+}
+#quantity {
+width: 40px;
+font-size: 15px;
+}
+#first_letter {
+width: 70px;
+height: 20px;
+font-size: 15px;
+}
+#timeout {
+width: 70px;
+height: 20px;
+font-size: 15px;
+}
+.labeled_box {
+display: inline-block;
+margin: 10px;
+}
+.button_training_panel {
+padding: 5px;
+width: 100px;
+position: relative;
+display: block;
+float: bottom;
+border-radius: 10px;
+}
+.training_settings_form > input, .training_settings_form > label {
+margin: 5px;
+}
+#current_word_ws {
+text-align: center;
+font-size: 120px;
+}
+
+#training_main_panel {
+	position: relative;
+	height: 200px;
+	left: 10px;
+	top: 10px;
+	display: block;
+	
+}
+#word_picture_training {
+	display: inline-block;
+}

@@ -1,0 +1,11 @@
+// function alertCookies(){
+// alert(getCookiesObject());
+// }
+
+// function getCookiesObject(){
+// 	var cook_str = document.cookie;
+// 	return cook_str;
+// }
+function lg(message) {
+	console.log(message);
+}

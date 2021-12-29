@@ -1,0 +1,38 @@
+#dictionary {
+border-color: #AAAAAA;
+}
+
+#letters_list {
+background-color: #417690;
+color: #f5dd5d;
+}
+
+#letters_list a:hover {
+background-color: rgb(220,265,265);
+}
+#dictionary_table_head {
+color: blue;
+}
+
+#first_letter {
+color: white;
+background-color: rgb(200,250,250);
+}
+
+.letter, .letter:visited {
+color: #f5dd5d;
+}
+#dictionary_settings {
+ border-color: #AAAAAA;
+ background-color: #417690;
+}
+
+#dictionary_settings #settings_label {
+	color: blue;
+	background-color: #417690;
+	color: white;
+}
+
+#first_letter td {
+border-color: rgb(200,250,250);
+}

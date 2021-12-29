@@ -1,0 +1,129 @@
+{% extends "base_page.html" %}
+
+
+{% block styles %}
+<style>
+  #topics_list {
+  font-size: 25px;
+  color: #f5dd5d;
+  font-family: cursive;
+  margin-left: 20px;
+  }
+</style>
+{% endblock %}
+
+
+
+        {% block content %}
+        <div id = "training_container">
+            <form name = "training_settings_form" method = "post" action = "#" onsubmit="return checkForm()">
+                {% csrf_token %}
+                <label class = "settings_label" for = "subject"> Subject: </label>
+                
+                <select id = "subject" name = "subject" change = "subject_change()">
+                    {% for subject in subjects_list %}
+                        <option value = {{subject}}>{{subject}}</option>
+                    {% endfor %}
+                </select>
+
+
+                <label class = "settings_label" for = "paragraph"> Paragraph: </label>
+
+                <select  id = "paragraph" name = "paragraph">
+                     {% for paragraph in paragraphs_list %}
+                         <option value = {{paragraph.value}}>{{paragraph.repr}}</option>
+                     {% endfor %}
+                </select>
+                <button type = "button" class = "button_training_panel" id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+                  <a id = "topics_list" href = {% url 'topics' %}> List of topics </a>
+           </form>
+            <div id = "training_panel">
+               <div id = "current_word" style = "font-size: 25px; padding: 10px"> <label id = "current_word_label"></label> </div>
+               <button id = "button_next_categories"> Next </button>
+               <textarea id = "topic_textarea">
+
+               </textarea> 
+            </div>
+        </div>
+        {% endblock %}
+       
+        {% block script %}
+        <script>
+        var words = []
+        var current_index = 0
+
+        document.getElementById("subject").addEventListener("change", subject_change)
+
+
+    function subject_change() {
+       var xhr = new XMLHttpRequest()
+       var form = document.forms[0]
+       var fd = new FormData(form)
+       xhr.onreadystatechange = function() {
+          if (this.readyState == 4) {
+            response = this.responseText
+            json_resp = JSON.parse(response)
+            paragraphs_list = json_resp["paragraphs"]
+            build_select_paragraph(paragraphs_list)
+            }  
+        }
+       url = location.href
+       xhr.open("POST",url)
+       xhr.setRequestHeader("action", "paragraphs_list")
+       xhr.send(fd)
+      }
+
+      function build_select_paragraph(paragraphs_list) {
+        var paragr_select = document.getElementById("paragraph")
+        innerHTML = ""
+        for (var i in paragraphs_list) {
+            innerHTML = innerHTML + "<option value = '"+paragraphs_list[Number(i)]["value"]+"'>"+paragraphs_list[Number(i)]["repr"]+"</option>"
+        }
+        paragr_select.innerHTML = innerHTML
+        }
+
+
+        function get_topics() {
+            current_index = 0
+            $("#training_panel").show()
+            var fd = new FormData(document.forms[0])
+            var xhr = new XMLHttpRequest()
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                response = xhr.responseText
+                words = JSON.parse(response)["topics"]
+                set_next_word()
+                }
+            }
+            url_str = window.location.href
+            xhr.open("POST",url_str)
+            xhr.setRequestHeader("action", "topics_list")
+            xhr.send(fd)
+        }
+
+        function set_next_word() {
+            if (current_index < words.length) {
+                var elem = document.getElementById("current_word_label")
+                elem.innerHTML = words[current_index]
+                current_index++
+                $("#topic_textarea").val("")
+            }
+        }
+        
+
+        $(document).ready(function(){
+
+      $("#button_begin").click(function(){
+        event.preventDefault()
+        $("#training_field_ws").css("visibility","visible")
+        get_topics()
+        })
+        $("#button_next_categories").click(
+            function() {
+                set_next_word()
+            }
+        )
+        $("#training_panel").hide()
+        })
+    </script>
+    {% endblock %}

@@ -1,0 +1,29 @@
+
+#header_cabinet {
+  background-color: rgba(150,220,170,0.5);
+}
+
+#settings_container {
+background-color: rgba(150,220,170,0.5);
+}
+
+#training_container {
+  background-color: rgba(150,220,170,0.5);
+}
+
+#user_log_container {
+background-color: rgba(150,220,170,0.5);
+}
+
+table {
+  background-color: white;
+}
+
+.cabinet_label {
+  color: orange;
+}
+
+.cabinet_ref, .cabinet_ref:visited {
+  color: orange;
+}
+

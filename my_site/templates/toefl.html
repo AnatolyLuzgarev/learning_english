@@ -1,0 +1,370 @@
+<!doctype html>
+{% load staticfiles %}
+<html>
+	<head>
+		<title>
+		Anatoly site
+		</title>
+		<meta charset="utf-8">
+		<script src = "/static/js/JQuery.js"></script>
+		<script src = "/static/js/common_scripts.js"></script>
+		<link rel = "stylesheet" type = "text/css" href = "/static/css/styles.css">
+	</head>
+	<body>
+		<div id = "left_panel">
+			<ul id = "sections_list">
+				<li><a class = "section" href = "http://127.0.0.1:8000/dictionary"> Dictionary </a></li>
+				<li><a class = "section" href = "http://127.0.0.1:8000/trainings"> Trainings </a></li>
+				<li><a class = "section" href = "http://127.0.0.1:8000/grammar"> Grammar </a></li>
+				<li><a class = "section" href = "http://127.0.0.1:8000/calendar"> Calendar </a></li>
+				<li><a class = "section" href = "http://127.0.0.1:8000/calculator"> Calculator </a></li>
+				<li><a class = "section" href = "http://127.0.0.1:8000/settings"> Settings </a></li>
+			</ul>
+		</div>
+	
+		<div id = "content_panel">
+			<ul>
+				<li>
+				<p class = "toefl_section"> Reading </p>
+                   <ol class = "toefl_questions">
+                       
+                       <li class = "toefl_question">
+                        <p class = "toefl_question_name"> Vocabulary question</p>
+ <div class = "toefl_question_content">
+ 	Examples: (we should define the meaning of the word or the phrase)
+ 	<ol>
+ 	<li>Word ..... has the closest meaning to word ..........</li>
+                          <li>In stating ....... the author means that ........</li>
+                         </ol>
+                        Look at the sentence. If meaning is vague, look at the neighbour sentences.
+                        Don't choose word you don't know, if another variant looks appropriate.
+                          </div>
+                       </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Detail question</p>
+                       	<div class = "toefl_question_content">
+                          Look at the question and find key words.<br/>
+                          Look paragraph for key words or their synonyms.<br/>
+                        (Usually 1 sentence, may be 2)<br/>
+                        </div>
+                       </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Negative detail question</p>
+                            	<div class = "toefl_question_content">
+                         Example:<br/>
+                         All of the following are mentioned in the passage ......, EXCEPT .......<br/>
+                         Strategy:<br/>
+                         Look at the question and find its key words. If you see clear key words, then:<br/>
+                         Begin to read the paragraph, looking for key words or synonyms. If find key words, read the
+                         sentence and understand it, further look at the answer choice and eliminate it, if
+                         it corresponds to the information in the sentence.<br/>
+                         If key words can't help significally, find key word for every answer choice and look
+                         them in the text.
+                        </div>
+                       </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Inference question</p>
+                       	<div class = "toefl_question_content">
+                       	The information you need
+                             There are two kinds of questions: inference form fact and from paragraph entirely.
+Entire paragraph: read the paragraph, understand the meaning. If answer is not obvious, eliminate wrong answers.
+From farc: find key words in the question, find them in the paragraph and understand what is implied from that. It is not stated in the text directly. Such variant will be incorrect.
+                       </div>
+                       </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Reference question </p>
+                       	<div class = "toefl_question_content">
+                            If word is noun, determine whether it is a single or plural. 
+                        </div>
+                       </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Plug-in questions </p>
+                          	<div class = "toefl_question_content">
+                         There are three kinds of sentences:
+                         <ol>
+                            <li> Topic sentence. Sentence which is supposed to be at the beginning, must describe a topic in general </li>
+                            <li> Supporting detail </li>
+                            <li> Conclusion. It may be or detail of final idea, or conclusion (summarizing) </li>
+                            At first, read the sentence attentively and find there references and transitions or the.
+                            Begin read sentences, looking for logical chains.
+                         </ol>
+                        </div>                         </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Paraphrasing questions </p>
+                             	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Function questions </p>
+                             	<div class = "toefl_question_content">
+                         Examples:<br/>
+                         <ol>
+                          <li>Author mention ......... in order to ..............</li>
+
+                          </ol>
+                        </div> 
+                       </li>            
+                      <li class = "toefl_question">
+                      	<p class = "toefl_question_name"> Summary questions </p>
+                      	  	<div class = "toefl_question_content">
+                            We should find the details among the answers.<br/>
+                            <ul>
+                            <li>If the answer choice doesn't pertain to the summary, we should eliminate it</li>
+                            <li>It detail is not abstract, we should eliminate it, for example:<br/>
+                            The low temperature causes the dilatation of the water.<br/></li>
+                            <li>
+                            If detail is abstract, for example: This effect was caused by harsh conditions, low morale and low salary, we can't eliminate it at once.</li>
+                            <li>Examples, but not facts from the paragraph, names and so forth</li>
+                            </ul>
+                        </div>
+                      </li>
+
+                   </ol>
+                         </li>
+				<li>
+ 				<p class = "toefl_section"> Listening </p>
+                    <ol class = "toefl_questions">
+                       
+                     
+                   <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Taking notes</p>
+                            	<div class = "toefl_question_content">
+                            <ul style = "list-style-type: none">
+                               <li> ! - important </li>
+                               <li> V - good </li>
+                               <li> X - bad </li>
+                               <li> S - some </li>
+                               <li> = - equal, means, similar </li>
+                               <li> ≠ - not equal, not means, not similar </li>
+                               <li> ^ - and</li>
+                               <li> ex - example </li>
+                               <li> + - many, much </li>
+                               <li> ++ - more (1 subject) </li>
+                               <li> > - more, stronger, bigger (2 subject) </li>
+                               <li> ⴲ - most </li>
+                               <li> - - few, little </li>
+                               <li> -- - fewer, less (1 subject) </li>
+                               <li> < - fewer, less (2 subjects) </li>
+                               <li> ⴱ - least </li>
+                                <li> → - imply, therefore  </li>
+                               <li> ← - because </li>
+                               <li> ↑ - increase </li>
+                               <li> ↓ - decrease </li>
+                            </ul>
+                        </div>
+                       </li>
+
+
+                         <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Gist-Content</p>
+                            	<div class = "toefl_question_content">
+                               It must pertain to the whole lection, not to a part.
+                        </div>
+                       </li>
+
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Gist-purpose</p>
+                            	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>
+                        
+             
+
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Detail question</p>
+                            	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>
+                  
+                      <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Inference question</p>
+                              	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>
+                      <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Function questions </p>
+                              	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>     
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Attitude questions </p>
+                              	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>   
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Organization questions </p>
+                              	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>   
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Categorization question </p>
+                              	<div class = "toefl_question_content">
+                         
+                        </div>
+                       </li>          
+                    
+
+                   </ol>
+
+
+				</li>
+				<li>
+				<p class = "toefl_section"> Writing </p>
+                  <ol class = "toefl_questins">
+                  <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Integrated task </p>
+                       	<div class = "toefl_question_content">
+                       	<div class = "toefl_template">
+                            Structure: <br/>
+
+<b> Introduction </b><br/>
+The article states that ….. However, the professor explains that ….. ant refutes all of author opinions.<br/>
+The reading and the lecture are both about ............. <br/><br/>
+<b> Body paragraphs </b><br/>
+First, the reading states that ….... The professor refutes it by …...<br/>
+First of all, according to the article, ................... Professor opposes this ............<br/>
+<br/>
+
+Second, the article claims that …...............However, professor says that …......<br/>
+<br/>
+Third, the reading avers that …........... The lecture opposes this point by saying that..... <br/>
+</div>
+</div>
+                       </li>   
+
+                    <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Independent task </p>
+                       	<div class = "toefl_question_content">
+                            <div class = "toefl_template">
+                            	Structure:<br/>
+
+<div class = "template_part"> Introduction: </div>
+
+1. Background<br/>
+2. Thesis<br/>
+<b> Example </b><br/>
+ Most people agree that .........(Some people say that ....... Others say that ........). In my opinion, .................. I feel this way for two reasons, which I will explore in the following essay.
+
+<div class = "template_part"> Body paragraphs: (2 body paragraphs) </div>
+
+1. Transition phrase:<br/>
+ At first, …....   /   Firstly, …... /   To begin with, ….......... / Secondly …....<br/>
+ 2. Topic sentence. (Topic statement is a statement without words: In my opinion …..., I think …..., it follows the transition:<br/>
+<b>Example:</b><br/> Firstly, contamination of environment includes a tainting of water, which is the most valuable and important resource on Earth.<br/>
+3. Development. We should deveop our idea from topic sentence <br/>
+
+<div class = "template_part">Conclusion </div>
+
+1. Conclusion phrase: (In conclusion,...)<br/>
+2. Restatement of thesis (without words: In my opinion …..., I think …..)<br/>
+3. Brief restatement of the main ideas.<br/>
+
+<b> Example </b><br/>
+
+In conclusion, I strongly believe that ....... This is because ........, and because ................
+
+
+                            </div>
+                        </div>
+                       </li>   
+                    </ol>
+				</li>
+				<li>
+				<p class = "toefl_section"> Speaking </p>
+				<ol class = "toefl_questins">
+                      <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Independent task </p>
+                             	<div class = "toefl_question_content">
+                                Kinds of questions:
+                                <ul>
+                                  <li>Agree/Disagree</li>
+                                  <li>Paired choice</li>
+                                  <li>Good idea</li>
+                                </ul>
+                                <div class = "toefl_template">
+                                   Introduction:<br/>
+                                   I agree that......<br/>
+                                   It is better to ........ <br/>
+                                   I think it is a good idea ...... <br/>
+                                   Body sentences </br>
+                                   At first ..................<br/>
+                                   At second .................<br/>
+                                   Little conclusion (optional) <br/>
+                                   </div>
+                        </div> 
+                       </li>   
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Integrated task 1 </p>
+                             	<div class = "toefl_question_content">
+                                Campus announcement.<br/>
+                                Notes from reading:<br/>
+                                Change<br/>
+                                Reason 1 <br/>
+                                Reason 2 <br/>
+
+                                Response:<br/>
+                                The reading passage has announced ......<br/>
+                                The woman in conversation is against this idea ..........<br/>
+                                Reasons ..................<br/>
+                                Little conclusion (optionally) <br/>
+                                 </div> 
+                       </li>   
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Integrated task 2 </p>
+                             	<div class = "toefl_question_content">
+                                <div class = "toefl_template">
+                                From the reading, ...... is defined as ........<br/>
+                                The professor further illustrates this subject with two examples. <br/>
+                                The professor further illustrates this subject with a real world example. <br/>
+                                
+                                First of all, the professor explains that <br/>
+                                In the first example, the professor ..............<br/>
+
+                                Secondly, the professor compares ............ <br/>
+                                In the second example,.....................
+
+                                First example ..........<br/>
+                                Second example ..........<br/>
+                                So, after listening, I have a better understanding of what ....... is. <br/>
+                                </div>
+                        </div> 
+                       </li>   
+                       <li class = "toefl_question">
+                       	<p class = "toefl_question_name"> Integrated task 3 </p>
+                             	<div class = "toefl_question_content">
+                             		Only listening passage.<br/>
+                             		Topic<br/>
+                             		Example 1 + detail <br/>
+                             		Example 2 + detail <br/>
+                             		       <div class = "toefl_template">
+                                In the lecture, the lecturer explains it with two examples ............<br/>
+                                After introducing the topic, the lecturer mentions ............<br/>
+                                In addition ..........<br/>
+                                So, after listening, I have a better understanding of what ....... is. <br/>
+                                </div>
+                         
+                        </div> 
+                       </li>   
+                     </ol>
+				</li>
+
+              </ul>
+		</div>
+		<script>
+			$(document).ready(function() {
+             $(".toefl_question_content").hide();
+             })
+			$(".toefl_question").click(function() {
+				$(this.lastElementChild).toggle()
+			}
+			)
+		</script>
+	</body>
+</html>

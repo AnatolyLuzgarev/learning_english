@@ -1,0 +1,55 @@
+<!doctype html>
+{% load static %}
+
+<html>
+    <head>
+        <title>
+        Learning english
+        </title>
+        <meta charset="utf-8">
+        <script src = "/static/js/JQuery.js"></script>
+        <script src = "/static/js/common_scripts.js"></script> 
+        {% if additional_stylesheet.main %}
+        <link rel = "stylesheet" type = "text/css" href = "/static/css/{{additional_stylesheet.main}}.css">
+        {% else %}
+        <link rel = "stylesheet" type = "text/css" href = "/static/css/styles.css">
+        {% endif %}
+        {% if additional_stylesheet.additional %}
+        <link rel = "stylesheet" type = "text/css" href = "/static/css/{{additional_stylesheet.additional}}.css">
+        {% if additional_stylesheet.theme %}
+        <link rel = "stylesheet" type = "text/css" href = "/static/css/{{additional_stylesheet.theme}}.css">
+        {% endif %}
+        {% endif %}
+        {% block styles %}
+
+        {% endblock %}
+    </head>
+    <body>
+        <div id = "left_panel">
+            <ul id = "sections_list">
+                <li><a class = "section" href = {% url 'dictionary' %}> Dictionary </a></li>
+                <li><a class = "section" href = {% url 'trainings' %}> Trainings </a></li>
+                <li><a class = "section" href = {% url 'grammar' %}> Grammar </a></li>
+                <li><a class = "section" href = {% url 'translator' %}> Translator </a></li>
+                <li><a class = "section" href = {% url 'cabinet' %}> My cabinet </a></li>
+                <li><a class = "section" href = {% url 'calendar' %}> Calendar </a></li>
+                <li><a class = "section" href = {% url 'initial_settings' %}> Load data </a></li>
+            </ul>
+        </div>
+        <div id = "content_panel">
+           {% block content %}
+
+           {% endblock %}
+        </div>
+        <div id = "user_info" style = "position: fixed; bottom: 1px; right: 10px">
+            <div id = "username"> {{username}} </div>
+            <a href = {% url 'logout' %}> Logout </a>
+            
+        </div>
+   
+        {% block script %}
+
+         {% endblock %}
+
+    </body>
+</html>

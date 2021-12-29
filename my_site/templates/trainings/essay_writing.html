@@ -1,0 +1,156 @@
+{% extends "base_page.html" %}
+
+{% block styles %}
+
+{% endblock %}
+
+    {% block content %}
+    <div id = "training_container">
+      
+      <form id = "essay_writing_form"> {% csrf_token %}
+        <!-- <input type = "button" id = "essay_writing_begin" value = "Begin"/> -->
+        <button id = "essay_writing_begin"> <div id = "button_id"> Begin </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+        <label class = "settings_label"> Time: </label>
+        <div class = "border_div">
+          <label> 20 min </label>
+          <input name = "time" type = "radio" value = "20"/>
+          <label> 30 min </label>
+          <input name = "time" type = "radio" value = "30" checked/>
+        </div>
+        <label class = "settings_label" style = "margin-left: 20px"> Words count </label>
+        <div class = "border_div" id = "essay_writing_words_counter"> 0 </div>
+        <div class = "border_div" id = "essay_writing_timer"></div>
+       <label id = "essay_writing_theme" style = "float: right; width: 40%; padding-right: 10%; padding-top: 10px; padding-bottom: 10px; padding-left:10px; font-size: 20px; border-style: solid; border-color: black; border-width: 1px"></label><br/>
+      <br/>
+        <textarea id = "essay_text">
+        </textarea>
+         <button id = "add_to_collection"> Add to collection </button>
+         <a id = "my_essays" href = {% url 'my_essays' %}> My essays </a>
+         </form>
+     </div>
+  </div>
+  {% endblock %}
+
+    {% block script %}
+  <script>
+  var current_id = 0
+  var min20 = 60*20;
+  var min30 = 60*30;
+  var min_test = min30;
+  var current_seconds = min30;
+  function begin_timer() {
+  var counter = setInterval(set_time, 1000)
+  
+  
+  }
+  function set_time() {
+  if (current_seconds > 0) {
+  var cur_time = get_format_time(current_seconds)
+  current_seconds--
+  $("#essay_writing_timer").text(cur_time)
+  }
+  else {
+  }
+  }
+  function get_format_time(seconds) {
+  var format_time = ""
+  var minutes = Math.floor(seconds/60)
+  var sec = seconds - minutes*60
+  if (sec == 0) {
+    sec = "00"
+  }
+  format_time = minutes.toString() + ":" + sec.toString()
+  return format_time
+  }
+  $(document).ready(function() {
+    $("#essay_writing_theme").hide()
+    set_time(0)
+  $(document.forms[0]["time"]).change(function() {
+    if (this.value == "20") {
+      min_test = min20;
+    }
+    else {
+      min_test = min30;
+    }
+
+  });
+
+
+  $("#add_to_collection").click(function() {
+    event.preventDefault()
+   add_to_collection()
+  })
+
+  function add_to_collection() {
+   var xhr = new XMLHttpRequest();
+   fd = new FormData(document.forms[0])
+   fd.append("theme_id",current_id)
+   text = $("#essay_text").val()
+   fd.append("essay_text",text)
+   xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      console.log(xhr.responseText)
+  }
+  }
+   url = location.href
+   xhr.open("POST",url,true)
+   xhr.setRequestHeader("operation", "add_to_collection")
+   xhr.send(fd)
+  }
+
+
+  $("#essay_writing_begin").click(function() {
+    event.preventDefault()
+    $("#essay_writing_theme").show()
+   set_random_essay_theme()
+   current_seconds = min_test
+   set_time(current_seconds)
+   begin_timer()
+  })
+  $("#essay_text").change(function() {
+    var text = this.value
+    var text = text.trim()
+    var text = text.replace("  ", " ")
+    var words_array = text.split(" ")
+    $("#essay_writing_words_counter").text(words_array.length)
+
+
+  })
+  })
+
+  function set_random_essay_theme() {
+    var fd = new FormData(document.forms[0]);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+     if (this.readyState == 4 && this.status == 200) {
+      var resp = this.responseText;
+      obj = JSON.parse(resp)
+      resp = obj["theme"]
+      resp = process_response(resp)
+      $("#essay_writing_theme").text(resp);
+      current_id = obj["id"]
+      }
+     }
+     xhr.open("POST",window.location.href);
+     xhr.setRequestHeader("operation", "get_random_essay")
+     xhr.send(fd);
+  }
+
+  function process_response(resp) {
+     var ind_2 = resp.substring(0, 4);
+     var ind_1 = resp.substring(0, 3);
+     var response = ""
+     if (!isNaN(ind_2)) {
+      response = resp.substring(4)
+     }
+     else if(!isNaN(ind_1)) {
+      response = resp.substring(3)
+     }
+     else {
+      response = resp
+     }
+     return response
+    }
+
+  </script>
+{% endblock %}

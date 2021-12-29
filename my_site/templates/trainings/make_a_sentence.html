@@ -1,0 +1,197 @@
+{% extends "base_page.html" %}
+
+{% block content %}
+     <div id = "training_container">
+      <form id = "training_form" method = "post" action = "#" style = "height: 100px" onsubmit="return checkForm()">{% csrf_token %}
+          <label class = "settings_label" for = "ms_quantity">Quantity of words:</label>
+          <input id = "ms_quantity" name = "quantity" type = "text" value = "10"/>
+  
+  
+          <label  class = "settings_label" for = "ms_first_letter">Select the first letter:</label>
+          <select id = "ms_first_letter" name = "letter">
+             <option value = "all">All</option>
+            {% for letter in letters %}
+              <option value = {{letter.lower}}> {{letter.upper}} </option>
+            {% endfor %}           
+          </select>
+          <label  class = "settings_label"> Word</label>
+          <input type = "radio" checked value = "word" name = "word_translaton"/>
+          <label  class = "settings_label"> Translation </label>
+          <input type = "radio" value = "translation" name = "word_translaton"/>
+          <label  class = "settings_label" for = "training_words"> Training words </label>
+          <input type = "checkbox" name = "training_words"/>
+          <button id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
+      </form>
+      
+        <div id = "training_panel">
+        <div id = "word_container">
+        <p id = "word"></p>
+        <p id = "answer"></p>
+        </div>
+        <div id = "training_buttons">
+        <button id = "ms_button_show" class = "training_button"> ? </button>
+        <button id = "ms_send_to_training" class = "training_button"> Send to training </button>
+        <button id = "ms_button_next" class = "training_button"> Next </button>
+      </div>
+        <textarea name="user_answer" id="training_input"></textarea>
+      </div>
+      <form style = "display: none" name = "words_tr">{% csrf_token %}<input type="hidden" name = "words_to_training">  </input></form>
+     </div>
+    {% endblock %}
+
+  {% block script %}
+  <script>
+  var questions = [];
+  var current_word = "";
+  var current_answer = "";
+  var current_number = 0;
+  var quantity_of_words = 0;
+  var right_answers = 0;
+  var test_is_active = true;
+  var word_used = true;
+  function set_value() {
+   var val = document.forms[0]["word_translaton"].value
+  if (val == "word") {
+  word_used = true
+  }
+  else {
+  word_used = false
+  }
+  }
+  function set_word_translation_value() {
+  $(document.forms[0]["word_translaton"]).change(function() {
+  set_value()
+  })
+  }
+  function nextQuestion() {
+  if (current_number == quantity_of_words - 1) {
+  $("#ms_button_next").text("Complete the test");
+  };
+  if (current_number == quantity_of_words) {
+  $("#word").text("Test is completed!");
+  test_is_active = false;
+  return;
+  };
+  var word = questions[current_number].translation;
+  var answer = questions[current_number].word;
+  if (word_used) {
+  $("#word").text(answer);
+  }
+  else {
+  $("#word").text(word);
+  }
+  $("#answer").text("");
+  $("#training_input").val("");
+  current_word = answer;
+  current_answer = word;
+  current_number++;
+  }
+  function getQuestions() {
+  var fd = new FormData(document.forms["training_form"]);
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+  if (this.readyState == 4) {
+  var response = xhr.responseText;
+  console.log(response)
+  var response_format = '{"array":'+response+'}';
+  json_object = JSON.parse(response_format);
+  var objects_array = json_object.array;
+  questions = objects_array;
+  quantity_of_words = questions.length;
+  nextQuestion();
+  };
+  };
+  url_str = window.location.href;
+  xhr.open("POST",url_str);
+  xhr.send(fd);
+  }
+  function answerIsRight() {
+  var sentence = $("#training_input").val().toLowerCase();
+  if ((sentence.search(current_word)==-1)||(sentence == "")) {
+  return false;
+  }
+  else {
+  return true;
+  }
+  }
+  $(document).ready(function(){
+  set_value()
+  set_word_translation_value()
+  $("#button_begin").click(function(){
+  event.preventDefault();
+  test_is_active = true;
+  if ((current_word != "")) {
+  var is_sure = confirm("Previous test is not completed. Start new test?");
+  if (!is_sure) {
+  return;
+  }
+  else {
+  current_word = "";
+  current_number = 0;
+  current_answer = "";
+  $("#ms_button_next").text("Next");
+  }
+  }
+  var quantity = $("#ms_quantity").val();
+  if (isNaN(quantity)) {
+  alert("Please, enter a number into the quantity field");
+  }
+  else {
+  $("#training_panel").css("visibility","visible");
+  getQuestions();
+  };
+  });
+  $("#ms_button_next").click(function(){
+  if (test_is_active) {
+  if (answerIsRight()) {
+  nextQuestion();
+  }
+  else {
+  $("#answer").text("Answer is not correct");
+  }
+  }
+  else {
+  //Proposal about beginning new test
+  var begin_test = confirm("Test is completed. Do you want to begin a new one?");
+  if (begin_test) {
+  $("#button_begin").click();
+  }
+  }
+  });
+  $("#ms_button_show").click(function() {
+  if (word_used) {
+  $("#answer").text(questions[current_number-1].translation);
+  }
+  else {
+  $("#answer").text(current_word);
+  };
+  });
+  $("#ms_first_letter").change(function() {
+  //alert("It works!")
+  })
+  $("#ms_send_to_training").click(function() {
+    send_to_training(current_word)
+  }
+  )
+  function send_to_training(word) {
+
+  document.forms["words_tr"]["words_to_training"].value = word
+  var fd = new FormData(document.forms["words_tr"])
+  var xhr = new XMLHttpRequest()
+  url_str = "http://" + location.host + "/dictionary/"
+  xhr.onreadystatechange = function() {
+  if (this.readyState == 4) {
+  console.log(this.responseText)
+  }
+  }
+  xhr.open("POST", url_str)
+  xhr.send(fd)
+  }
+  $("#training_input").keyup(function(event) {
+  if (event.keyCode == 13) {
+  $("#ms_button_next").click();
+  }
+  })
+  });
+  </script>
+  {% endblock %}

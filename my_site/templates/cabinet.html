@@ -1,0 +1,81 @@
+{% extends "base_page.html" %}
+{% block styles %}
+{% endblock %}
+{% block content %}
+	<div id = "cabinet_container">
+		<div id = "header_cabinet">
+        {{username}}'s cabinet
+		</div>
+		<div id = "settings_container">
+		<form name = "settings" method = "POST"> {% csrf_token %}
+			<div class = "cabinet_label"> Application settings </div>
+			<label class = "cabinet_input"> Main theme: </label>
+			<select name = "main_theme">
+				<option value = "green">Green</option>
+				<option value = "blue">Blue</option>
+			</select>
+			<button id = "apply"> Apply </button>
+		</form>
+	  </div>
+		<div id = "training_container">
+			<div class = "cabinet_label"> Trainings </div>
+			<p class = "cabinet_subsection"> Words for training </p>
+			<label class = "cabinet_input"> Amount of words to training: {{amount}} </label> <br/>
+			<a class = "cabinet_ref" href = {% url 'dictionary_letter' "training" %}> Go to the list </a>
+			<form method = "POST" name = "dict_form"> {% csrf_token %}
+				<button id = "button_training"> Clear all training </button><br/>
+			</form>
+			<a class = "cabinet_ref" href = {% url 'my_essays' %}> My essays </a>
+			<form method = "POST" name = "essays_form"> {% csrf_token %}
+				<button id = "button_clear_essays"> Clear essays </button><br/>
+			</form>
+		</div>
+		<div id = "user_log_container">
+			<div class = "cabinet_label"> User log </div>
+			<form method = "POST" name = "log_form"> {% csrf_token %}
+			<button id = "clear_log">Clear log</button>
+			</form>
+			<table>
+				<tr id = "table_header">
+					<td class = "td_date"> Date:  </td>
+					<td class = "td_event">  Event: </td>
+				</tr>
+			{% for row in user_log %}
+               <tr>
+					<td class = "td_date"> {{row.date}} </td>
+					<td class = "td_event"> {{row.event}} </td>
+				</tr>
+			{% endfor %}
+		 </table>
+		</div>
+		<a href = {% url 'api_list' %}> API List </a>
+	</div>
+{% endblock %}
+{% block script %}
+<script>
+
+   	function clear_log() {
+    ajax_post("log_form","clear_log",true)  
+    location.reload()
+    }
+
+	function clear_essays() {
+     ajax_post("essays_form","clear_essays",true)  
+    }
+    
+	function apply_settings() {
+	ajax_post("settings","settings",false)
+	location.reload()
+    }
+
+	function clear_training() {
+	ajax_post("dict_form","clear_trainings",true)
+	}
+
+    $("#button_training").click(clear_training)
+	$("#apply").click(apply_settings)
+	$("#button_clear_essays").click(clear_essays)
+    $("#clear_log").click(clear_log)
+
+</script>
+{% endblock %}

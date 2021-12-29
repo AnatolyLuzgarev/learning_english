@@ -1,0 +1,34 @@
+{% extends "base_page.html" %}
+
+{% block styles %}
+<style>
+
+a {
+	font-size: 20px;
+	margin: 10px;
+	padding: 10px;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+ 
+ 	{% for api in api_list %}
+ 	  {% if api == 'get_translation'%}
+ 	  <div>
+       <a href = {% url api 'A' %}> {{api}} </a>
+   </div>
+       {% else %}
+       <div>
+       <a href = {% url api %}> {{api}} </a>
+   </div>
+       {% endif %}
+ 	  
+ 	{% endfor %}
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
