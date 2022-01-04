@@ -109,3 +109,25 @@ class GrammarRule(models.Model):
 	def __str__(self):
 		return "{}/{}".format(self.section, self.rule)
 	
+	
+class CalendarTask(models.Model):
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	date = models.DateField(default=datetime.datetime.now)
+	training = models.CharField(max_length=100)
+	amount = models.IntegerField()
+
+	def __str__(self):
+		return "{}/{}/{}/{}".format(self.user, self.date, self.training, self.amount)
+
+
+class CompletedTask(models.Model):
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	date = models.DateTimeField(default=datetime.datetime.now())	
+	training = models.CharField(max_length=100)
+	
+	def __str__(self):
+		return "{}{}{}".format(self.user, self.date, self.training)
+	
+	
+	
+	

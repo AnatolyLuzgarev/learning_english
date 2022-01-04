@@ -70,26 +70,27 @@
 
   function nextQuestion() {
   if (current_number == quantity_of_words - 1) {
-  $("#button_next").text("Complete>");
-  };
+  $("#button_next").text("Complete>")
+   }
   if (current_number == quantity_of_words) {
   $("#word").text("Test is completed!");
   showRightAnswers();
   text = "'Word-Translation with' with " + String(quantity_of_words) + " words";
-  log_training("Word-Translation",0,quantity_of_words)
+  log_training("Word-Translation", 0, quantity_of_words)
+  complete_training("Word-Translation", 0)
   test_is_active = false;
   return;
   };
-  var word = questions[current_number].word;
-  var answer = questions[current_number].translation;
-  $("#word").text(word);
-  $("#answer").text(" ");
+  var word = questions[current_number].word
+  var answer = questions[current_number].translation
+  $("#word").text(word)
+  $("#answer").text(" ")
   if (picture_checked()) {
   set_picture()
   }
-  current_word = word;
-  current_answer = answer;
-  current_number++;
+  current_word = word
+  current_answer = answer
+  current_number++
   }
   //////////////////////////////////////////////////////////
   function showRightAnswers() {

@@ -1,5 +1,5 @@
 
-function ajax_post(form_name,operation,safe = false) {
+function ajax_post(form_name, operation, safe = false) {
 event.preventDefault()	
   if (safe == true) {
    response = confirm("Are you sure?")
@@ -25,14 +25,14 @@ event.preventDefault()
 }
 
 /////////////////////////////////////////////////////////////////////////
-function log_training(training_name,form_number,quantity = undefined) {
+function log_training(training_name, form_number, quantity = undefined) {
     var xhr =new XMLHttpRequest()
     var fd = new FormData(document.forms[form_number])
     if (quantity == undefined) {
-       var log_text = "completed training ${training_name}";
+       var log_text = "completed training " + String(training_name)
     }
     else {
-       var log_text = "completed training ${training_name} with ${quantity} words";
+       var log_text = "completed training "+ String(training_name) +" with " + String(quantity) + " words";
 	}
     fd.append("log_text",log_text)
     xhr.onreadystatechange = function() {
@@ -43,10 +43,26 @@ function log_training(training_name,form_number,quantity = undefined) {
      }
    }
    var url = "http://" + location.host + "/api/logs/"
-   xhr.open("POST",url,true)
+   xhr.open("POST", url, true)
    xhr.send(fd)   
  }
 /////////////////////////////////////////////////////////////////////////////
+function complete_training(training_name, form_number) {
+ var xhr = new XMLHttpRequest()
+ var fd = new FormData(document.forms[form_number])
+ fd.append("training", training_name)
+ xhr.onreadystatechange = function() {
+  if (this.readyState == 4) {
+    if (this.status != 200) {
+      console.log(this.responseText)
+    }
+ }
+}
+ var url = "http://" + location.host + "/trainings/" 
+ xhr.open("POST", url, true)
+ xhr.send(fd)
+}
+//////////////////////////////////////////////////////////////////////////
 function send_word_to_training(words) {
   if (words.length == 0) {
   	return

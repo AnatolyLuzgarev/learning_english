@@ -53,6 +53,8 @@
     if (current_number == quantity_of_words) {
     $("#word").text("Test is completed!");
   showRightAnswers();
+   text = "'Translation-word with' with " + String(quantity_of_words) + " words";
+  log_training("Translation-word",0,quantity_of_words)
   test_is_active = false;
   return;
   };

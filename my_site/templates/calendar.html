@@ -3,49 +3,402 @@
 
 		{% block styles %}
 		<style>
-           #cookies {
-           	 background-color: red;
-           	 transition: 1.0s;
+        #months_list {
+        	display: inline-block;
+        }
+
+        #months_list li {
+        	display: inline-block;
+        	padding: 0px;
+        }
+
+        #main_container {
+        	left: 100px;
+        	top: 50px;
+        }
+
+		#calendar_container {
+			display: block;
+			position: relative;
+    /*       left: 100px;
+           top: 50px;	*/
+           padding: 10px;
+                     border-style: solid;
+             border-width: 2px;
+             border-color: black;
+             padding: 10px;
+             width: 750px;
+		}
+            .weekday_header {
+            	background-color: #FFFFA7;
+            	text-align: center;
+            }
+
+
+		    .weekday_header_weekend {
+		    	background-color: #FFFFA7;
+		    	color: red;
+		    	text-align: center;
+		    }
+
+		    .calendar_day_weekend {
+		    	color: red;
+		    	padding: 5px;
+		    }
+
+		    .weekday_header:hover {
+              color: black;
+		    }
+
+		    .weekday_header_weekend:hover {
+              color: red;
+		    }
+           .calendar_table {
+             font-size: 25px;
+             border-collapse: collapse;
+   
            }
-           #cookies:hover {
-           	background-color: green;
+
+           .calendar_day {
+           	border-width: 1px;
+           	border-color: black;
+           	padding: 5px;
            }
-		</style>
+           .calendar_table td {
+           	width: 100px;
+           	height: 50px;
+           	border-style: solid;
+           	border-width: 1px;
+           	border-color: black;
+           }
+
+           .calendar_day:hover, .calendar_day_weekend:hover {
+           	background-color: #B5D3E7;
+           }
+
+           .calendar_week:hover {
+           	 background-color: rgba(220,220,220,0.5);
+           	 color: black;
+           }
+
+           #day_tasks_container {
+           	position: absolute;
+              border-style: solid;
+              border-width: 2px;
+              border-color: black;
+              width: 750px;
+              height: 400px;
+              margin-top: 50px;
+           }
+
+           form[name = "day_tasks_form"] {
+           	position: absolute;
+           	width: 100%;
+           	height: 100%;
+           }
+
+           #task_day {
+           	position: absolute;
+           	width: 200px;
+           	height: 30px;
+           	font-size: 30px;
+           	margin: 10px;
+           }
+
+           #submit_tasks {
+           	 position: absolute;
+             right: 10px;
+             bottom: 10px;
+             height: 30px;
+             width: 100px;
+             font-size: 20px;
+             background-color: #FFFFA7;
+           }
+
+           #current_month {
+           	background-color: #FFFFA7;
+           }
+
+           #tasks_table {
+           	position: absolute;
+           	top: 100px;
+           	left: 20px;
+           }
+
+           .tasks_list_header {
+           	font-size: 20px;
+           }
+
+           .task {
+           	font-size: 20px;
+           }
+
+           #tasks_table td {
+           	width: 20px;
+
+           }
+          
+           .tasks_day {
+           	display: inline-block;
+           }
+
+           .tasks_progress {
+           	font-size: 15px;
+           	display: inline-block;
+           	margin-left: 45%;
+           }
+
+           .tasks_red {
+            background-color: #FF6961;
+           }
+
+           .tasks_orange {
+           	background-color: #FFCD5D;
+           }
+
+           .tasks_green {
+           	background-color: #99EDC3;
+           }
+
+           </style>
 	    {% endblock %}
 
 		
 		{% block content %}
+	  <div id = "months_container">
+      <div id = "calendar_container">
+      <div id = "months_container">
+	  <ul id = "months_list">
+	  	{% for month in months_list %}
+	  	  {% if month.name != current_month %}
+          <li> <a href = {{month.url}}>  {{month.name}} </a> </li>
+          {% else %}
+          <li id = "current_month"> <a href = {{month.url}}>  {{month.name}} </a> </li>
+          {% endif %}
+	  	  {% endfor %}
 
-    <div id = "week_days">       
-    <ul>
-     {% for day in week_days %}
-     <li>    
+	  </ul>
+	  </div>
+      <table class = "calendar_table">
+      <tr id = "weekdays_header">
+      	<td class = "weekday_header">Monday</td>
+      	<td class = "weekday_header">Tuesday</td>
+      	<td class = "weekday_header">Wednesday</td>
+      	<td class = "weekday_header">Thursday</td>
+      	<td class = "weekday_header">Friday</td>
+      	<td class = "weekday_header_weekend">Saturday</td>
+      	<td class = "weekday_header_weekend">Sunday</td>
+      </tr>
+        {% for week in weeks_list %}
+       <tr class = "calendar_week">
+       {% for day in week %}
+         {% if day.weekday < 5 %}
+         <td class = "calendar_day">
+         {% else %}
+         <td class = "calendar_day_weekend">
+         {% endif %}
+         	{% if day.number != 0 %}
+            <div class = "tasks_day">
+              {{day.number}}
+            </div>
+            <div class = "tasks_progress">  
+              {% if day.amount > 0 %}
+              {{day.completed}}/{{day.amount}}
+              {% endif %}
+            </div>
+            {% else %}
+              
+            {% endif %}
+         	
+         </td>               
+       {% endfor %}
+       </tr>
+        {% endfor %}
+      </table>
+     </div>
+     <div id = "day_tasks_container">
+      <div id = "task_day">  </div>
+      <form name = "day_tasks_form" method = "POST">
+      	{% csrf_token %}
+      <table id = "tasks_table">
+        <tr class = "tasks_list_header">
+          <td>Training</td>
+          <td>Amount</td>
+		</tr>
+		{% for i in trainings_amount %}
+		<tr class = "task">
+          <td class = "task_training">
+          	<select name = "training_{{i}}">
+              {% for training in trainings_list %}
+                <option>{{training}}</option>
+			  {% endfor %}
+			</select>
+			</td>
+          <td class = "task_amont">
+          	<input type="text" name="amount_{{i}}" value = "0">
+          </td>
+		</tr>
+		{% endfor %}
 
+      </table>
 
-     </li>
-     {% endfor %}
-	</ul>
-	</div>
+    <button id = "submit_tasks">Submit</button>
+      </form>
 
-
+     </div>
+   </div>
 		{% endblock %}
 
 
 {% block script %}
 <script>
+ var current_month = ""
+ var current_year = 2022
+ var current_day = ""
 
-		function setCurrentTime() {
-			var elem = document.getElementById("time_panel");
-			var elem_date = document.getElementById("date_panel");
-			var current_date = new Date();
-			var time_string = current_date.toLocaleTimeString();
-			var date_string = current_date.toLocaleDateString();
-			elem_date.innerHTML = date_string;
-			elem.innerHTML = time_string;
-		}
-		$(document).ready(function() {
-		var sheduler = setInterval(setCurrentTime, 1000);
-		});
-		</script>
+ var is_changed = false
+
+
+$("#submit_tasks").click(function() {
+    event.preventDefault()
+    submit_tasks()
+ })
+
+$(".task_training select, .task_amount input").change(function() {
+   is_changed = true 
+})
+
+ function get_current_month() {
+   var cm = $("#current_month a").text()
+   return cm
+ }
+
+ current_month = get_current_month()
+
+
+
+  $(".calendar_day, .calendar_day_weekend").click(function(event) {	
+   current_day = event.currentTarget.children[0].innerText
+   show_day_settings(current_day)
+	}
+  )
+
+  function show_day_settings(current_day) {
+  var date_string = current_month + ", " + String(current_day)
+  $("#task_day").text(date_string)	
+  var xhr = new XMLHttpRequest()
+   params = {
+    year: current_year,
+    month: current_month,
+    day: current_day
+	}
+   xhr.onreadystatechange = function() {
+   	if (this.readyState == 4) {
+      if (this.status != 200) {
+          console.log(this.responseText)
+      }
+      else {
+      	var json_content = this.responseText
+      	var tasks_object = JSON.parse(json_content)
+      	build_tasks_from_json(tasks_object)
+      }
+	}
+  }
+   var url = location.href
+   url = url + get_params_string_only_day(params)
+   xhr.open("GET", url)
+   xhr.setRequestHeader("operation", "get_tasks")
+   xhr.send()
+  }
+
+ function get_params_string_only_day(params_object) {
+     var params_string = "&"
+    params_string = params_string +  "day=" + String(params_object["day"]).trim()
+     return params_string
+   }
+
+
+  function get_params_string(params_object) {
+   var params_string = "?"
+   var counter = 0
+   for (var key in params_object) {
+   	   if (counter != 0) {
+   	   	 params_string = params_string + "&"
+   	   }
+       params_string = params_string + key + "=" + String(params_object[key]).trim()
+       counter = counter + 1
+   }
+   return params_string
+	}
+
+  function build_tasks_from_json(json_tasks) {
+  	 var table = document.getElementById("tasks_table")
+  	 var table_rows = table.children[0].children
+     var tasks_list = json_tasks["tasks"]
+     clear_tasks(table_rows)
+     for (var key in tasks_list) {
+        table_key = Number(key) + 1
+        var task_name = tasks_list[Number(key)]["task"]
+        var task_number = get_task_number(task_name) 
+        table_rows[table_key].children[0].children[0].children[task_number].setAttribute("selected", true)
+        table_rows[table_key].children[1].children[0].value = tasks_list[Number(key)]["amount"]
+     } 
+	}
+
+    function clear_tasks(table_rows) {
+     for (i=1; i<=5; i++) {
+       for (k=0; k<8; k++) {
+         table_rows[i].children[0].children[0].children[k].removeAttribute("selected")	
+       }
+        table_rows[i].children[1].children[0].value = 0
+     	}
+     }
+
+
+
+  function get_task_number(task_name) {
+    	trainings_list = [
+		              "",
+		              "Word-Translation",
+					  "Translation-Word",
+					  "Essay writing",
+					  "Words series",
+					  "Make a sentence",
+					  "Grammar training",
+					  "Topics training",
+					  ]
+	   var task_index = trainings_list.indexOf(task_name)
+	   return task_index				  
+  }
+
+
+  function submit_tasks() {
+   if (!is_changed) {
+   	 alert("There are no changes in trainings list!")
+   	 return
+   }
+   var xhr = new XMLHttpRequest()
+   var fd = new FormData(document.forms[0])
+   fd.append("year", current_year)
+   fd.append("month", current_month)
+   fd.append("day", current_day)
+   xhr.onreadystatechange = function() {
+   	if (this.readyState == 4) {
+      if (this.status != 200) {
+          console.log(this.responseText)
+      }
+      else {
+      	is_changed = false
+      }
+	}
+  }
+   var url = location.href
+   xhr.open("POST", url)
+   xhr.send(fd)
+  }
+	
+
+
+</script>
 {% endblock %}
 	

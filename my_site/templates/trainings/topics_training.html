@@ -106,21 +106,39 @@
                 var elem = document.getElementById("current_word_label")
                 elem.innerHTML = words[current_index]
                 current_index++
+                complete_training("Topics training", 0)
                 $("#topic_textarea").val("")
             }
         }
         
 
+
+        function check_answer() {
+        var textarea = document.getElementById("topic_textarea")
+        var value = textarea.value
+        if (value == "") {
+          alert("The answer field is empty!")
+          return false
+        }
+        else {
+          return true
+        }
+
+        }
+
+
         $(document).ready(function(){
 
       $("#button_begin").click(function(){
         event.preventDefault()
-        $("#training_field_ws").css("visibility","visible")
+        $("#training_field_ws").css("visibility", "visible")
         get_topics()
         })
         $("#button_next_categories").click(
             function() {
+               if (check_answer()) {
                 set_next_word()
+              }
             }
         )
         $("#training_panel").hide()

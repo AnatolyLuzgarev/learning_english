@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Word
 from .models import Topic
 from .models import Event
@@ -10,6 +11,8 @@ from .models import UserLog
 from .models import WordPicture
 from .models import GrammarSection
 from .models import GrammarRule
+from .models import CalendarTask
+from .models import CompletedTask
 
 # Register your models here.
 admin.site.register(Word)
@@ -23,6 +26,9 @@ admin.site.register(UserLog)
 admin.site.register(WordPicture)
 admin.site.register(GrammarRule)
 admin.site.register(GrammarSection)
+admin.site.register(CalendarTask)
+admin.site.register(CompletedTask)
+
 
 class WordAdmin(admin.ModelAdmin):
     list_display = ('main_word')

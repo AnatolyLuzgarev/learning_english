@@ -6,6 +6,7 @@ import html
 import re
 import os
 import time
+import calendar
 
 import requests
 import pandas
@@ -19,13 +20,18 @@ from xml.etree import ElementTree
 from bs4 import BeautifulSoup
 
 import my_site.settings as settings_set
-from .models import Word, WordTraining, Topic, UserSettings, EssayTheme, UserEssay, UserLog, WordPicture
+from .models import Word, WordTraining, Topic, UserSettings, EssayTheme, UserEssay
+from .models import UserLog
+from .models import WordPicture
+from .models import CalendarTask
+from .models import CompletedTask
 from .models import GrammarSection, GrammarRule
 from .forms import TopicForm, RegisterForm
 from django.db import connection
 from .decorators import only_get
 from .decorators import only_get_post
 #Create your views here.
+
 
 @csrf_exempt
 @only_get_post
@@ -64,7 +70,8 @@ def login_view(request):
 			login(request,user)
 			return HttpResponseRedirect("/")
 		else:
-			return render(request, "login_page.html",{"info": "login or password is not correct!"})
+			return render(request, "login_page.html",
+						 {"info": "login or password is not correct!"})
 
 
 def logout_view(request):
@@ -81,7 +88,7 @@ def index(request):
 		additional_stylesheet = get_user_stylesheet("welcome_page", user)
 		params = {
 			'username':username,
-			'additional_stylesheet':additional_stylesheet
+			'additional_stylesheet': additional_stylesheet
 			}
 		return render(request,"welcome_page.html", params)
 	else:
@@ -112,7 +119,7 @@ def cabinet(request):
 			return HttpResponse(status=200)
 		elif request.headers["operation"] == "settings":
 			user = request.user
-			main_theme = request.POST.get("main_theme","blue")
+			main_theme = request.POST.get("main_theme", "blue")
 			write_settings(main_theme, user)
 			return HttpResponse(status=200)
 		elif request.headers["operation"] == "clear_log":
@@ -148,7 +155,7 @@ def write_settings(main_theme,user):
 
 
 def get_amount_training_words(user):
-	amount = WordTraining.objects.filter(user_id = user.id).count()
+	amount = WordTraining.objects.filter(user_id=user.id).count()
 	return amount
 
 
@@ -160,23 +167,23 @@ def initial_settings(request):
 	#Here we will handle our file with words
 	if request.method == "POST":   
 		if request.FILES.get("my_file", "not_found") != "not_found":
-			xlsx_file = request.FILES.get("my_file","not_found")
+			xlsx_file = request.FILES.get("my_file", "not_found")
 			xlsx_content = xlsx_file.read()
 			write_words(xlsx_content)
 			return HttpResponse(status=200)
 		elif request.FILES.get("topics_file", "not_found") != "not_found":
-			xlsx_file = request.FILES.get("topics_file","not_found")
+			xlsx_file = request.FILES.get("topics_file", "not_found")
 			xlsx_content = xlsx_file.read()
 			write_topics_xlsx(xlsx_content)
 			my_dict = {}
 			my_dict["main_content"] = ""
 			return render(request,"settings.html", my_dict)
 		elif request.FILES.get("essays_file","not_found") != "not_found":
-			content = request.FILES.get("essays_file","not_found")
+			content = request.FILES.get("essays_file", "not_found")
 			write_essays_themes(content)
 			return HttpResponse(status=200)
 		elif request.FILES.get("grammar_file", "not_found") != "not_found":
-			content = request.FILES.get("grammar_file","not_found")
+			content = request.FILES.get("grammar_file", "not_found")
 			content = content.read()
 			write_grammar(content)
 			return HttpResponse(status=200)
@@ -193,7 +200,7 @@ def initial_settings(request):
 			return HttpResponse("Error!")
 	elif request.method == "GET":
 		user = request.user
-		additional_stylesheet = get_user_stylesheet("settings",user)
+		additional_stylesheet = get_user_stylesheet("settings", user)
 		params = {
 			'additional_stylesheet': additional_stylesheet
 			}
@@ -208,16 +215,16 @@ def load_all_data():
 	topics_path = os.path.join(files_catalog, "Topics.xlsx")
 	grammar_path = os.path.join(files_catalog, "grammar.xml")
 	essays_path = os.path.join(files_catalog, "Essays_themes.txt")
-	with open(words_path,'rb') as words_reader:
+	with open(words_path, 'rb') as words_reader:
 		words_content = words_reader.read()
 		write_words(words_content)
-	with open(topics_path,'rb') as topics_reader:
+	with open(topics_path, 'rb') as topics_reader:
 		topics_content = topics_reader.read()
 		write_topics_xlsx(topics_content)
-	with open(grammar_path,'rb') as grammar_reader:
+	with open(grammar_path, 'rb') as grammar_reader:
 		grammar_content = grammar_reader.read()
 		write_grammar(grammar_content)
-	with open(essays_path,'rb') as essays_reader:
+	with open(essays_path, 'rb') as essays_reader:
 		essays_content = essays_reader
 		write_essays_themes(essays_content)
 
@@ -369,7 +376,7 @@ def delete_all_words():
 #---------------------------------------------------------------------
 #Trainings section
 @login_required(login_url="/login/")
-@only_get
+@only_get_post
 def trainings(request):
 	if request.method == "GET":
 		user = request.user
@@ -378,6 +385,11 @@ def trainings(request):
 			'additional_stylesheet': additional_stylesheet
 			}
 		return render(request, "trainings.html", params)
+	elif request.method == "POST":
+		user = request.user
+		training = request.POST["training"]
+		compl_task = CompletedTask(user=user, training=training)
+		compl_task.save()
 	
 
 def get_amount_of_words(letter):
@@ -424,6 +436,7 @@ def get_random_essay_theme():
 		'theme': theme["theme"]
 		}
 	return value
+
 
 def get_user_stylesheet(name,user=None):
 	user_settings = UserSettings.objects.filter(user=user).values("main_theme")
@@ -499,8 +512,8 @@ def translation_word(request):
 			}
 		return render(request,"translation_word.html", params)
 	elif request.method == "POST":
-		quantity = int(request.POST.get("quantity",0))
-		letter = request.POST.get("letter", "all")
+		quantity = int(request.POST.get("quantity", 0))
+		letter = request.POST.get("letter", "all").lower()
 		training_words = request.POST.get("training_words", False)
 		user = request.user
 		print(quantity,letter,user,training_words)
@@ -713,7 +726,7 @@ def get_grammar_sections():
 	parser.feed(data)
 	grammar_sections = parser.get_grammar_sections()
 	print(grammar_sections)
-	formatted_sections = [{'val': x.replace(" ","_"), 'repr': x } for x in grammar_sections]
+	formatted_sections = [{'val': x.replace(" ", "_"), 'repr': x} for x in grammar_sections]
 	return formatted_sections
 
 
@@ -997,7 +1010,7 @@ def get_words(letter=None, user=None):
 	return selection
 
 
-def add_words_to_training(words_to_training,user):
+def add_words_to_training(words_to_training, user):
 	list_id = json.loads(words_to_training)
 	words_str = ""
 	for word_id in list_id:
@@ -1053,7 +1066,7 @@ def translator(request):
 #Grammar
 def grammar(request):
 	user = request.user
-	additional_stylesheet = get_user_stylesheet("grammar",user)
+	additional_stylesheet = get_user_stylesheet("grammar", user)
 	sections = get_grammar_list()
 	params = {
 		'additional_stylesheet': additional_stylesheet,
@@ -1106,7 +1119,7 @@ def files(request):
 	if request.method == "GET":
 		user = request.user
 		files_list = get_list_of_files()
-		additional_stylesheet = get_user_stylesheet("files", user = user)
+		additional_stylesheet = get_user_stylesheet("files", user=user)
 		params = {
 			'files_list': files_list,
 			'additional_stylesheet': additional_stylesheet
@@ -1134,19 +1147,153 @@ def get_list_of_files():
 
 
 def get_files_path():
-	return os.path.join(settings_set.BASE_DIR,r"my_site/files")
+	return os.path.join(settings_set.BASE_DIR, r"my_site/files")
 
 
 @login_required(login_url="/login/")
-@only_get
-def calendar(request):
-	user = request.user
-	additional_stylesheet = get_user_stylesheet("style", user)
-	params = {
-		'additional_stylesheet': additional_stylesheet
-		}
-	return render(request,"calendar.html",params)
+@only_get_post
+def calendar_view(request):
+	if request.method == "GET":
+		if request.headers.get("operation", "") != "get_tasks":
+			user = request.user
+			additional_stylesheet = get_user_stylesheet("style", user)
+			month = int(request.GET.get("month", datetime.datetime.now().month))
+			year = int(request.GET.get("year", datetime.datetime.now().year))
+			if len(request.GET) == 0:
+				new_path = request.path + "?month={}&year={}".format(month, year)
+				return HttpResponseRedirect(new_path)
+			weeks_list = get_month_data(month, year, user)
+			url = request.path
+			months_list = get_months_list(url, year)
+			params = {
+				'additional_stylesheet': additional_stylesheet,
+				'weeks_list': weeks_list,
+				'months_list': months_list,
+				'current_month': calendar.month_name[month],
+				'trainings_list': get_trainings_list(),
+				'trainings_amount': range(5)
+				}
+			return render(request, "calendar.html", params)
+		else:
+			user = request.user
+			year = int(request.GET.get("year", 2022))
+			month = int(request.GET.get("month", 1))
+			day = int(request.GET.get("day", 1))
+			training_date = datetime.date(year, month, day)
+			tasks = CalendarTask.objects.filter(user=user, date=training_date)
+			tasks_list = []
+			for task in tasks:
+				task_dict = {'task': task.training, 'amount': task.amount}
+				tasks_list.append(task_dict)
+			json_resp = {'tasks': tasks_list}
+			return JsonResponse(json_resp)
+	elif request.method == "POST":
+		user = request.user
+		year = int(request.POST.get("year", 2022))
+		month_param = request.POST["month"].strip()
+		month = int(list(calendar.month_name).index(month_param))
+		day = int(request.POST["day"])
+		date = datetime.date(year, month, day)
+		CalendarTask.objects.filter(user=user, date=date).delete()
+		for x in range(5):
+			task = request.POST["training_{}".format(x)]
+			amount = request.POST["amount_{}".format(x)]
+			if task != "":
+				new_task = CalendarTask(user=user, date=date, training=task, amount=amount)
+				new_task.save()
+		return HttpResponse(status=200)
+		
 
+def get_months_list(url, year):
+	names = calendar.month_name
+	months_list = [
+					{
+	                 'name': names[i],
+				     'number': i,
+					 'url': "{}?month={}&year={}".format(url, i, year) 
+					 }  
+				  for i in range(13)]
+	return months_list[1:]
+
+
+def get_trainings_list():
+	trainings_list = [
+		              "",
+		              "Word-Translation",
+					  "Translation-Word",
+					  "Essay writing",
+					  "Words series",
+					  "Make a sentence",
+					  "Grammar training",
+					  "Topics training",
+					  ]
+	return trainings_list
+	
+
+
+def get_month_data(month, year, user):
+	month_range = calendar.monthcalendar(year, month)
+	weeks_list = []
+	for week in month_range:
+		week_list = []
+		week_day = 0
+		for day in week:
+			if day != 0:
+				date = datetime.datetime(year, month, day)
+				tasks_amount = get_trainings_amount(date, user)
+				compl_tasks = get_compl_tasks_amount(date, user)
+			else:
+				tasks_amount = 0
+				compl_tasks = 0
+			day_dict = {
+						"number": day,
+						"weekday": week_day,
+						"amount": tasks_amount,
+						"completed": compl_tasks
+						}
+			week_day += 1
+			week_list.append(day_dict)
+		weeks_list.append(week_list)
+	return weeks_list
+
+
+
+
+def get_trainings_amount(date, user):
+	with connection.cursor() as cursor:
+		query = """
+		SELECT
+		SUM(t.amount) AS amount
+		FROM
+		work_app_calendartask AS t
+		WHERE
+		t.user_id = %s
+		AND
+		t.date = %s
+		"""
+		cursor.execute(query, [user.id, date])
+		selector = cursor.fetchall()
+		tasks = selector[0][0]
+		return tasks
+	
+	
+def get_compl_tasks_amount(date, user):
+	with connection.cursor() as cursor:
+		query = """
+		SELECT
+		Count(t.training)
+		FROM
+		work_app_completedtask AS t
+		WHERE
+		t.user_id = %s
+		AND
+		date_trunc('day', t.date) = %s
+		"""
+		cursor.execute(query, [user.id, date])
+		result = cursor.fetchall()
+		tasks_amount = result[0][0]
+		return tasks_amount
+		
 
 @login_required(login_url='/login/')
 @only_get
@@ -1159,7 +1306,7 @@ def api_list(request):
 			"api_list": api_list,
 			"additional_stylesheet": additional_stylesheet
 			}
-		return render(request,"api_list.html",params)
+		return render(request, "api_list.html", params)
 
 
 def get_api_list():

@@ -36,3 +36,8 @@ color: #f5dd5d;
 #first_letter td {
 border-color: rgb(200,250,250);
 }
+
+  table tr:hover {
+ background-color: #AAAAAA;
+        color: red;
+         }
