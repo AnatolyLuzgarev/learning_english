@@ -388,7 +388,9 @@ def trainings(request):
 	elif request.method == "POST":
 		user = request.user
 		training = request.POST["training"]
-		compl_task = CompletedTask(user=user, training=training)
+		compl_task = CompletedTask(user=user, 
+								  training=training, 
+								  date = datetime.datetime.now())
 		compl_task.save()
 	
 
@@ -1242,6 +1244,7 @@ def get_month_data(month, year, user):
 				date = datetime.datetime(year, month, day)
 				tasks_amount = get_trainings_amount(date, user)
 				compl_tasks = get_compl_tasks_amount(date, user)
+				print(date, tasks_amount, compl_tasks)
 			else:
 				tasks_amount = 0
 				compl_tasks = 0
