@@ -130,4 +130,3 @@ class CompletedTask(models.Model):
 	
 	
 	
-	
