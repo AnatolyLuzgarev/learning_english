@@ -1,3 +1,2 @@
 import calendar
 
-print(calendar)
