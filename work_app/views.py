@@ -1045,7 +1045,7 @@ def translator(request):
 		user = request.user
 		words_to_training = request.POST["words"]
 		add_words_to_training(words_to_training, user)
-		return HttpResponse(status = 200)
+		return HttpResponse(status=200)
 		
 	 
    #---------------------------------------------------------------------------
