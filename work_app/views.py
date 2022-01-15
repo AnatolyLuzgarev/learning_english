@@ -87,7 +87,7 @@ def index(request):
 		username = request.user.username
 		additional_stylesheet = get_user_stylesheet("welcome_page", user)
 		params = {
-			'username':username,
+			'username': username,
 			'additional_stylesheet': additional_stylesheet
 			}
 		return render(request,"welcome_page.html", params)
@@ -95,7 +95,7 @@ def index(request):
 		return HttpResponse(status=501)
 
 
-@login_required(login_url = "/login/")
+@login_required(login_url="/login/")
 @only_get_post
 def cabinet(request):
 	if request.method == "GET":
@@ -145,9 +145,9 @@ def get_user_log(user, date=None):
 	
 		
 def write_settings(main_theme,user):
-	user_settings = UserSettings.objects.filter(user_id = user.id).all()
+	user_settings = UserSettings.objects.filter(user_id=user.id).all()
 	if len(user_settings) == 0:
-		settings_new = UserSettings(user = user, main_theme = main_theme)
+		settings_new = UserSettings(user=user, main_theme=main_theme)
 		settings_new.save()
 	else:
 		user_settings[0].main_theme = main_theme
@@ -204,7 +204,7 @@ def initial_settings(request):
 		params = {
 			'additional_stylesheet': additional_stylesheet
 			}
-		rend_page = render(request,"settings.html",params)
+		rend_page = render(request, "settings.html", params)
 		return rend_page
 
 
@@ -351,7 +351,7 @@ def save_styles_in_file(params):
 	for x in params:
 		styles_dict[x] = params[x]
 	text_json = json.dumps(styles_dict)
-	with open(conf_file_path,'w') as fw:
+	with open(conf_file_path, 'w') as fw:
 		fw.write(text_json)
 
 
@@ -401,7 +401,7 @@ def get_amount_of_words(letter):
 
 
 def process_amount_of_words(request,letter):
-	if request.POST.get("words_amount",0) != 0:
+	if request.POST.get("words_amount", 0) != 0:
 		return get_amount_of_words(letter)
 	else:
 		return 0
@@ -673,7 +673,6 @@ def grammar_training(request):
 	if request.method == "GET":
 		user = request.user
 		grammar_sections = get_grammar_sections()
-		print(grammar_sections)
 		additional_stylesheet = get_user_stylesheet("categories_training", user)
 		params = {
 			'grammar_sections': grammar_sections,
