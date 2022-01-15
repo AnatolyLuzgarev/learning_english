@@ -87,7 +87,7 @@ def index(request):
 		username = request.user.username
 		additional_stylesheet = get_user_stylesheet("welcome_page", user)
 		params = {
-			'username':username,
+			'username': username,
 			'additional_stylesheet': additional_stylesheet
 			}
 		return render(request,"welcome_page.html", params)
@@ -95,7 +95,7 @@ def index(request):
 		return HttpResponse(status=501)
 
 
-@login_required(login_url = "/login/")
+@login_required(login_url="/login/")
 @only_get_post
 def cabinet(request):
 	if request.method == "GET":
@@ -145,9 +145,9 @@ def get_user_log(user, date=None):
 	
 		
 def write_settings(main_theme,user):
-	user_settings = UserSettings.objects.filter(user_id = user.id).all()
+	user_settings = UserSettings.objects.filter(user_id=user.id).all()
 	if len(user_settings) == 0:
-		settings_new = UserSettings(user = user, main_theme = main_theme)
+		settings_new = UserSettings(user=user, main_theme=main_theme)
 		settings_new.save()
 	else:
 		user_settings[0].main_theme = main_theme
@@ -204,7 +204,7 @@ def initial_settings(request):
 		params = {
 			'additional_stylesheet': additional_stylesheet
 			}
-		rend_page = render(request,"settings.html",params)
+		rend_page = render(request, "settings.html", params)
 		return rend_page
 
 
@@ -351,7 +351,7 @@ def save_styles_in_file(params):
 	for x in params:
 		styles_dict[x] = params[x]
 	text_json = json.dumps(styles_dict)
-	with open(conf_file_path,'w') as fw:
+	with open(conf_file_path, 'w') as fw:
 		fw.write(text_json)
 
 
@@ -401,7 +401,7 @@ def get_amount_of_words(letter):
 
 
 def process_amount_of_words(request,letter):
-	if request.POST.get("words_amount",0) != 0:
+	if request.POST.get("words_amount", 0) != 0:
 		return get_amount_of_words(letter)
 	else:
 		return 0
@@ -563,13 +563,13 @@ def get_array_of_words(letter, quantity, training_words=False, user=None):
 			WHERE wordtraining.user_id = %s 
 			"""
 			if letter == "all":
-				cursor.execute(query,[user.id])
+				cursor.execute(query, [user.id])
 			else:
 				query = query + " AND work_app_word.first_letter = %s"
 				cursor.execute(query,[user.id, letter])
 			selector = cursor.fetchall()
 			for x in selector:
-				word = {'word':x[0],'translation':x[1],'transcription':x[2],'id':x[3]}
+				word = {'word': x[0], 'translation': x[1], 'transcription': x[2], 'id': x[3]}
 				total_array.append(word)
 	else:
 		if letter == "all":
@@ -578,7 +578,7 @@ def get_array_of_words(letter, quantity, training_words=False, user=None):
 			selection = Word.objects.filter(first_letter=letter).values()
 		total_array = [x for x in selection]
 	random.shuffle(total_array)
-	total_array = total_array[0:min(quantity,len(total_array))]
+	total_array = total_array[0:min(quantity, len(total_array))]
 	return total_array
 
 
@@ -603,7 +603,7 @@ def phrasal_verbs(request):
 def get_phrasal_verbs_list():
 	query = "SELECT work_app_word.* FROM work_app_word WHERE work_app_word.category =  'Phrasal verb'"
 	selector = Word.objects.raw(query)
-	selector = Word.objects.filter(category = 'Phrasal verb').distinct()
+	selector = Word.objects.filter(category='Phrasal verb').distinct()
 	words_array = [x.word for x in selector]
 	words_array = process_phrasal_verbs_array(words_array)
 	words_array = prosses_phrasal_verbs_doubles(words_array)
@@ -673,7 +673,6 @@ def grammar_training(request):
 	if request.method == "GET":
 		user = request.user
 		grammar_sections = get_grammar_sections()
-		print(grammar_sections)
 		additional_stylesheet = get_user_stylesheet("categories_training", user)
 		params = {
 			'grammar_sections': grammar_sections,
@@ -682,7 +681,7 @@ def grammar_training(request):
 		return render(request,"grammar_training.html", params)
 	elif request.method == "POST":
 		section = request.POST.get("section", "all")
-		section = section.replace("_"," ")
+		section = section.replace("_", " ")
 		random_rule = get_grammar_rule(section)
 		rule_dict = {
 			"rule": random_rule
