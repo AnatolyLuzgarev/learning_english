@@ -563,13 +563,13 @@ def get_array_of_words(letter, quantity, training_words=False, user=None):
 			WHERE wordtraining.user_id = %s 
 			"""
 			if letter == "all":
-				cursor.execute(query,[user.id])
+				cursor.execute(query, [user.id])
 			else:
 				query = query + " AND work_app_word.first_letter = %s"
 				cursor.execute(query,[user.id, letter])
 			selector = cursor.fetchall()
 			for x in selector:
-				word = {'word':x[0],'translation':x[1],'transcription':x[2],'id':x[3]}
+				word = {'word': x[0], 'translation': x[1], 'transcription': x[2], 'id': x[3]}
 				total_array.append(word)
 	else:
 		if letter == "all":
@@ -578,7 +578,7 @@ def get_array_of_words(letter, quantity, training_words=False, user=None):
 			selection = Word.objects.filter(first_letter=letter).values()
 		total_array = [x for x in selection]
 	random.shuffle(total_array)
-	total_array = total_array[0:min(quantity,len(total_array))]
+	total_array = total_array[0:min(quantity, len(total_array))]
 	return total_array
 
 
@@ -603,7 +603,7 @@ def phrasal_verbs(request):
 def get_phrasal_verbs_list():
 	query = "SELECT work_app_word.* FROM work_app_word WHERE work_app_word.category =  'Phrasal verb'"
 	selector = Word.objects.raw(query)
-	selector = Word.objects.filter(category = 'Phrasal verb').distinct()
+	selector = Word.objects.filter(category='Phrasal verb').distinct()
 	words_array = [x.word for x in selector]
 	words_array = process_phrasal_verbs_array(words_array)
 	words_array = prosses_phrasal_verbs_doubles(words_array)
@@ -682,7 +682,7 @@ def grammar_training(request):
 		return render(request,"grammar_training.html", params)
 	elif request.method == "POST":
 		section = request.POST.get("section", "all")
-		section = section.replace("_"," ")
+		section = section.replace("_", " ")
 		random_rule = get_grammar_rule(section)
 		rule_dict = {
 			"rule": random_rule
