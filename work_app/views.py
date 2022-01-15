@@ -1231,7 +1231,6 @@ def get_trainings_list():
 	return trainings_list
 	
 
-
 def get_month_data(month, year, user):
 	month_range = calendar.monthcalendar(year, month)
 	weeks_list = []
@@ -1257,8 +1256,6 @@ def get_month_data(month, year, user):
 			week_list.append(day_dict)
 		weeks_list.append(week_list)
 	return weeks_list
-
-
 
 
 def get_trainings_amount(date, user):
