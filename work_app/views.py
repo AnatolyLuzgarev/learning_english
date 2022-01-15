@@ -777,7 +777,7 @@ def categories_training(request):
 
 def words_of_category(category):
 	words_list = []
-	words = Word.objects.filter(category = category).distinct()
+	words = Word.objects.filter(category=category).distinct()
 	for x in words:
 		words_list.append(x.word)
 	return words_list
