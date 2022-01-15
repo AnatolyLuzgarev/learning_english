@@ -593,7 +593,7 @@ def phrasal_verbs(request):
 			'phrasal_verbs': phrasal_verbs,
 			'additional_stylesheet': additional_stylesheet
 			}
-		return render(request,"phrasal_verbs.html", params)
+		return render(request, "phrasal_verbs.html", params)
 	elif request.method == "POST":
 		ph_word = request.POST["phrasal_verb"]
 		response = str(get_phrasal_verbs(ph_word))
@@ -753,7 +753,7 @@ def get_grammar_text_data():
 
 
 #Categories training----------------------------------------------------------------
-@login_required(login_url = "/login/")
+@login_required(login_url="/login/")
 @only_get_post
 def categories_training(request):
 	if request.method == "GET":
@@ -893,7 +893,7 @@ def t(var):
 
 #------------------------------------------------------------------------------------
 #Dictionary
-@login_required(login_url = "/login/")
+@login_required(login_url="/login/")
 @only_get_post
 def dictionary(request):
 	if request.method == "GET":
@@ -911,7 +911,7 @@ def dictionary(request):
 		return render(request, "dictionary.html", words_dict)
 	elif request.method == "POST":
 		if request.headers["operation"] == "picture_uploading":
-			picture_url = request.POST.get("picture_url","")
+			picture_url = request.POST.get("picture_url", "")
 			if picture_url == "":
 				picture_file = request.FILES["picture_file"]
 				word = request.POST["picture_word"]
@@ -924,21 +924,21 @@ def dictionary(request):
 				translation = request.POST["picture_translation"]
 				result = requests.get(picture_url)
 				binary_data = result.content
-				save_picture_on_server(binary_data,word,translation)
+				save_picture_on_server(binary_data, word, translation)
 				return HttpResponse(status=200)
 		elif request.headers["operation"] == "words_to_training":
 			words_to_training = request.POST["words_to_training"]
 			user = request.user
-			add_words_to_training(words_to_training,user)
+			add_words_to_training(words_to_training, user)
 			return HttpResponse(status=200)
 
 
 @login_required(login_url = "/login/")
-def dictionary_letter(request,letter):
+def dictionary_letter(request, letter):
 	if request.method == "GET":
 		user = request.user
 		letter_low = letter.lower()
-		words_list = get_words(letter_low,user)
+		words_list = get_words(letter_low, user)
 		letters_list = get_letters_list()
 		addinional_stylesheet = get_user_stylesheet("dictionary", user)
 		dictionary_style = build_style_string()
@@ -964,10 +964,10 @@ def get_letters_list():
 	return letters_list
 
 
-def save_picture_on_server(binary_data,word,translation):
+def save_picture_on_server(binary_data, word, translation):
 	dirname = os.path.join(settings_set.BASE_DIR,r"my_site/static_files/words_pictures")
 	basename = "{}_{}.jpg".format(word,translation).replace(" ", "_")
-	file_name = os.path.join(dirname,basename) 
+	file_name = os.path.join(dirname, basename) 
 	with open(file_name,'wb') as fw:
 		fw.write(binary_data)
 
@@ -989,13 +989,13 @@ def build_style_string():
 	for x in settings_dict:
 		if settings_dict[x] == "default":
 			continue
-		style_str = style_str + str(x).replace("_","-") + ":" + str(settings_dict[x]) + "; " 
+		style_str = style_str + str(x).replace("_", "-") + ":" + str(settings_dict[x]) + "; " 
 	style_str = style_str + "'"
 	return style_str
 
 
 def get_settings_path():
-	path = os.path.join(settings_set.BASE_DIR,r"my_site/static_files/text/settings.json")
+	path = os.path.join(settings_set.BASE_DIR, r"my_site/static_files/text/settings.json")
 	return path
 
 
@@ -1024,7 +1024,7 @@ def add_words_to_training(words_to_training, user):
 	log(user,event)
 	
 	
-def log(user,event):
+def log(user, event):
 	curr_date = datetime.datetime.now()
 	new_event = UserLog(user=user, event=event, date=curr_date)
 	new_event.save()
@@ -1066,7 +1066,7 @@ def get_grammar_list():
 	all_sections = GrammarSection.objects.all()
 	main_list = []
 	for section in all_sections:
-		rules = GrammarRule.objects.filter(section=section).values("rule","example")
+		rules = GrammarRule.objects.filter(section=section).values("rule", "example")
 		rules_list = [{"rule": rule["rule"],"example": rule["example"]} for rule in rules]
 		new_elem = {
 			"section": section.name,
@@ -1114,7 +1114,7 @@ def files(request):
 		return render(request,"files.html",params)
 
 
-def get_file(request,filename):
+def get_file(request, filename):
 	if request.method == "GET":
 		path_file = get_files_path() + "/" + filename
 		with open(path_file,'rb') as fr:
