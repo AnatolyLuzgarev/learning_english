@@ -1030,20 +1030,6 @@ def log(user,event):
 	new_event.save()
 			
 
-def remove_words_from_training(words_to_training):
-	array = words_to_training.split(";")
-	text_message = ""
-	try:
-		for x in array:
-			obj = Word.objects.filter(word=x)
-			for y in obj:
-				y.to_training = False
-				y.save()
-	except:
-		text_message = "Error" + str(array)
-	return text_message
-	
-
 #Translator-----------------------------------------------------------------
 @login_required(login_url="/login/")
 @only_get_post
