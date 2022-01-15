@@ -1,11 +1,32 @@
-.clauses {
-list-style-type: none;
-}
 #content_panel ul {
 list-style-type: none;
-width: 100%;
 padding-left: 10px;
 }
+
+
+.clauses {
+list-style-type: none;
+/*width: 400px;*/
+}
+
+.clause {
+margin: 10px;
+/*width: 400px;*/
+}
+
+.clause_point {
+font-weight: 500;
+width: 99%;
+padding: 5px 5px 5px 5px;
+font-size: 20px;
+font-family: cursive;
+}
+
+ul .clauses {
+position: relative;
+left: - 50px;
+}
+
 #main_list {
 width: 50%;
 }
@@ -25,20 +46,7 @@ margin: 2px;
 padding: 5px 5px 5px 5px;
 color: orange;
 }
-.clause {
-margin: 10px;
-}
-.clause_point {
-font-weight: 500;
-width: 99%;
-padding: 5px 5px 5px 5px;
-font-size: 20px;
-font-family: cursive;
-}
-ul .clauses {
-position: relative;
-left: - 50px;
-}
+
 .examples {
 border-style: solid;
 border-width: 1px;
