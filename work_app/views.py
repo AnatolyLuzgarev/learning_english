@@ -965,8 +965,8 @@ def get_letters_list():
 
 
 def save_picture_on_server(binary_data, word, translation):
-	dirname = os.path.join(settings_set.BASE_DIR,r"my_site/static_files/words_pictures")
-	basename = "{}_{}.jpg".format(word,translation).replace(" ", "_")
+	dirname = os.path.join(settings_set.BASE_DIR, r"my_site/static_files/words_pictures")
+	basename = "{}_{}.jpg".format(word, translation).replace(" ", "_")
 	file_name = os.path.join(dirname, basename) 
 	with open(file_name,'wb') as fw:
 		fw.write(binary_data)
@@ -975,7 +975,7 @@ def save_picture_on_server(binary_data, word, translation):
 def get_list_of_styles():
 	path = get_settings_path()
 	json_text = ""
-	with open(path,'r') as fr:
+	with open(path, 'r') as fr:
 		json_text = fr.read()
 	settings_dict = json.loads(json_text)
 	return settings_dict
