@@ -161,7 +161,7 @@ def get_amount_training_words(user):
 
 #Settings section
 @csrf_exempt
-@login_required(login_url = "/login/")
+@login_required(login_url="/login/")
 @only_get_post
 def initial_settings(request):
 	#Here we will handle our file with words
@@ -264,7 +264,7 @@ def write_grammar(content):
 						example = clause_list[1].text.strip()
 					else:
 						example = ""
-					new_rule = GrammarRule(section = current_section, rule = rule, example = example)
+					new_rule = GrammarRule(section=current_section, rule=rule, example=example)
 					new_rule.save()
 
 
