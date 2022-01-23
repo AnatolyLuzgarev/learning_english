@@ -1,25 +1,25 @@
-import io
 import datetime
 import json
 import random
 import html
-import re
 import os
-import time
 import calendar
+import sys
 
 import requests
-import pandas
 from django.shortcuts import render
-from django.http import HttpResponse,JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.contrib.auth import login, logout, authenticate
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from xml.etree import ElementTree
-from bs4 import BeautifulSoup
 
 import my_site.settings as settings_set
+import work_app.initial_loading as i_load
+import work_app.dictionary as dict_module
+import work_app.logs as logs
+import work_app.pictures as pictures
+import work_app.calendar as cal
 from .models import Word, WordTraining, Topic, UserSettings, EssayTheme, UserEssay
 from .models import UserLog
 from .models import WordPicture
@@ -82,6 +82,7 @@ def logout_view(request):
 @login_required(login_url="/login/")
 @only_get
 def index(request):
+	print(sys.path)
 	if request.method == "GET":
 		user = request.user
 		username = request.user.username
@@ -103,7 +104,7 @@ def cabinet(request):
 		additional_stylesheet = get_user_stylesheet("cabinet", user)
 		current_settings = get_current_settings(user)
 		training_words_amount = get_amount_training_words(user)
-		user_log = get_user_log(user)
+		user_log = logs.get_user_log(user)
 		params = {
 		'current_settings': current_settings,
 		'amount': training_words_amount	,
@@ -134,16 +135,7 @@ def get_current_settings(user):
 	settings_value = UserSettings.objects.filter(user=user).values()
 	return settings_value
 
-
-def get_user_log(user, date=None):
-	if date == None:
-		selection = UserLog.objects.filter(user=user).values("date", "event")
-	else:
-		selection = UserLog.objects.filter(user=user, date_level_gr=date).values("date", "event")
-	events = [{"date": x["date"], "event": x["event"]} for x in selection]
-	return events
-	
-		
+			
 def write_settings(main_theme,user):
 	user_settings = UserSettings.objects.filter(user_id=user.id).all()
 	if len(user_settings) == 0:
@@ -169,32 +161,32 @@ def initial_settings(request):
 		if request.FILES.get("my_file", "not_found") != "not_found":
 			xlsx_file = request.FILES.get("my_file", "not_found")
 			xlsx_content = xlsx_file.read()
-			write_words(xlsx_content)
+			i_load.write_words(xlsx_content)
 			return HttpResponse(status=200)
 		elif request.FILES.get("topics_file", "not_found") != "not_found":
 			xlsx_file = request.FILES.get("topics_file", "not_found")
 			xlsx_content = xlsx_file.read()
-			write_topics_xlsx(xlsx_content)
+			i_load.write_topics_xlsx(xlsx_content)
 			my_dict = {}
 			my_dict["main_content"] = ""
 			return render(request,"settings.html", my_dict)
 		elif request.FILES.get("essays_file","not_found") != "not_found":
 			content = request.FILES.get("essays_file", "not_found")
-			write_essays_themes(content)
+			i_load.write_essays_themes(content)
 			return HttpResponse(status=200)
 		elif request.FILES.get("grammar_file", "not_found") != "not_found":
 			content = request.FILES.get("grammar_file", "not_found")
 			content = content.read()
-			write_grammar(content)
+			i_load.write_grammar(content)
 			return HttpResponse(status=200)
 		elif request.headers.get("operation", "") == "load_pictures":
-			load_pictures()
+			pictures.load_pictures()
 			return HttpResponse(status=200)
 		elif request.headers.get("operation", "") == "clear_pictures":
-			clear_pictures()
+			pictures.clear_pictures()
 			return HttpResponse(status=200)
 		elif request.headers.get("operation", "") == "load_all_data":
-			load_all_data()
+			i_load.load_all_data()
 			return HttpResponse(status=200)
 		else:
 			return HttpResponse("Error!")
@@ -207,144 +199,7 @@ def initial_settings(request):
 		rend_page = render(request, "settings.html", params)
 		return rend_page
 
-
-def load_all_data():
-	files_catalog = os.path.join(settings_set.BASE_DIR, r'my_site/files')
-	print(files_catalog)
-	words_path = os.path.join(files_catalog, "Words.xlsx")
-	topics_path = os.path.join(files_catalog, "Topics.xlsx")
-	grammar_path = os.path.join(files_catalog, "grammar.xml")
-	essays_path = os.path.join(files_catalog, "Essays_themes.txt")
-	with open(words_path, 'rb') as words_reader:
-		words_content = words_reader.read()
-		write_words(words_content)
-	with open(topics_path, 'rb') as topics_reader:
-		topics_content = topics_reader.read()
-		write_topics_xlsx(topics_content)
-	with open(grammar_path, 'rb') as grammar_reader:
-		grammar_content = grammar_reader.read()
-		write_grammar(grammar_content)
-	with open(essays_path, 'rb') as essays_reader:
-		essays_content = essays_reader
-		write_essays_themes(essays_content)
-
-
-def write_words(content):
-	delete_all_words()
-	xlsx_read = pandas.read_excel(io.BytesIO(content))
-	for index,row in xlsx_read.iterrows():
-		new_word = Word(
-			word = row["Word"].strip(),
-			translation = nan(row["Translating"]),
-			transcription = nan(row["Transcription"]),
-			first_letter=row["Word"][0].lower(),
-			example=nan(row["Example"]), category=nan(row["Category"])
-			)
-		new_word.save(using = 'default')
 	
-	
-def write_grammar(content):
-	GrammarSection.objects.all().delete()
-	text = content.decode("utf-8")
-	root = ElementTree.fromstring(text)
-	main_list = list(root)[0]
-	for section in main_list:
-		current_section = ""
-		for clause in section:
-			if clause.tag == "h3":
-				section_text = clause.text
-				new_section = GrammarSection(name=section_text)
-				new_section.save()
-				current_section = new_section
-			elif clause.tag == "ul":
-				for clause_elem in clause:
-					clause_list = list(clause_elem)
-					rule = clause_list[0].text.strip()
-					if len(clause_list) > 1:
-						example = clause_list[1].text.strip()
-					else:
-						example = ""
-					new_rule = GrammarRule(section=current_section, rule=rule, example=example)
-					new_rule.save()
-
-
-def clear_pictures():
-	WordPicture.objects.all().delete()
-
-def load_pictures():
-    words = get_words_for_pictures()
-    for word in words[:50]:
-        url_list = get_picture_urls(word[0])
-        for url in url_list:
-            word_picture = WordPicture(word_id=word[3], url=url)
-            word_picture.save()
-        time.sleep(60)
-			
-		
-def get_words_for_pictures():
-	with connection.cursor() as cursor:
-		query = """SELECT DISTINCT
-		work_app_word.word AS word,
-		work_app_word.translation AS translation,
-		work_app_word.transcription AS transcription,
-		work_app_word.id AS id
-		FROM
-		work_app_word 
-		LEFT JOIN
-		wordpicture
-		ON
-		work_app_word.id = wordpicture.word_id
-		WHERE wordpicture.word_id IS NULL
-		"""
-		cursor.execute(query)
-		selector = cursor.fetchall()
-		words_list = [word for word in selector]
-		return words_list
-
-
-def get_picture_urls(word):
-	url_pattern = "https://yandex.ru/images/search?from=tabbar&text={}"
-	url = url_pattern.format(word)
-	response = requests.get(url)
-	text = response.text
-	print(text)
-	soup = BeautifulSoup(text, 'html.parser')
-	elems = soup.select(".serp-controller__content div div")
-	pattern = r':"https:[^\:}]*\.jpg"'
-	patterner = re.compile(pattern)
-	curr_amount = 0
-	url_list = []
-	for x in elems:
-		results = patterner.findall(str(x))
-		if len(results) > 0:
-			url_list = [*url_list,results[0][2:-1]]
-			curr_amount = curr_amount + 1
-		else:
-			continue
-		if curr_amount == 5:
-			break
-	return url_list
-
-
-def write_essays_themes(content):
-	EssayTheme.objects.all().delete()
-	topics_array = content.readlines()
-	for topic in topics_array:
-		new_topic = EssayTheme(theme=topic.decode('utf-8'))
-		new_topic.save()
-	
-	
-def write_topics_xlsx(file_content):
-	delete_all_topics()
-	xlsx_read = pandas.read_excel(io.BytesIO(file_content))
-	for index,row in xlsx_read.iterrows():
-		new_topic = Topic(topic=row["Topic"], paragraph=row["Paragraph"], subject=row["Subject"])
-		new_topic.save()
-
-def delete_all_topics():
-	Topic.objects.all().delete()
-
-
 def save_styles_in_file(params):
 	styles_dict = {}
 	conf_file_path = get_settings_path()
@@ -361,18 +216,7 @@ def clear_all_trainings(user=None):
 	else:
 		WordTraining.objects.filter(user_id=user.id).delete()
 		 
-		 
-def nan(str_val):
-	if str_val != "nan":
-		return str_val
-	else:
-		return ""
-
-
-def delete_all_words():
-	Word.objects.all().delete()    
-
-
+	
 #---------------------------------------------------------------------
 #Trainings section
 @login_required(login_url="/login/")
@@ -898,7 +742,7 @@ def t(var):
 def dictionary(request):
 	if request.method == "GET":
 		user = request.user
-		words_list = get_words()
+		words_list = dict_module.get_words()
 		letters_list = get_letters_list()
 		dictionary_style = build_style_string()
 		addinional_stylesheet = get_user_stylesheet("dictionary", user)
@@ -929,7 +773,7 @@ def dictionary(request):
 		elif request.headers["operation"] == "words_to_training":
 			words_to_training = request.POST["words_to_training"]
 			user = request.user
-			add_words_to_training(words_to_training, user)
+			dict_module.add_words_to_training(words_to_training, user)
 			return HttpResponse(status=200)
 
 
@@ -938,7 +782,7 @@ def dictionary_letter(request, letter):
 	if request.method == "GET":
 		user = request.user
 		letter_low = letter.lower()
-		words_list = get_words(letter_low, user)
+		words_list = dict_module.get_words(letter_low, user)
 		letters_list = get_letters_list()
 		addinional_stylesheet = get_user_stylesheet("dictionary", user)
 		dictionary_style = build_style_string()
@@ -953,7 +797,7 @@ def dictionary_letter(request, letter):
 		if request.headers["operation"] == "words_to_training":
 			words_to_training = request.POST["words_to_training"]
 			user = request.user
-			add_words_to_training(words_to_training, user)
+			dict_module.add_words_to_training(words_to_training, user)
 			return HttpResponse(status=200)
 		
 
@@ -998,38 +842,7 @@ def get_settings_path():
 	path = os.path.join(settings_set.BASE_DIR, r"my_site/static_files/text/settings.json")
 	return path
 
-
-def get_words(letter=None, user=None):
-	if letter == None:
-		selection = Word.objects.all().values()
-	elif letter == "training":
-		selection = WordTraining.objects.filter(user=user)
-		words = [row.word for row in selection]
-		selection = [{'word': row.word, 'translation': row.translation, 'transcription':row.transcription} for row in words] 
-	else:
-		selection = Word.objects.filter(first_letter=letter).values()
-	return selection
-
-
-def add_words_to_training(words_to_training, user):
-	list_id = json.loads(words_to_training)
-	words_str = ""
-	for word_id in list_id:
-		word = Word.objects.get(id=word_id)
-		words_str = words_str + ", " + word.word
-		word_training = WordTraining(word=word, user=user)
-		word_training.save()
-	words_str = words_str[2:]
-	event = "added words: {} to training".format(words_str)
-	log(user,event)
 	
-	
-def log(user, event):
-	curr_date = datetime.datetime.now()
-	new_event = UserLog(user=user, event=event, date=curr_date)
-	new_event.save()
-			
-
 #Translator-----------------------------------------------------------------
 @login_required(login_url="/login/")
 @only_get_post
@@ -1044,7 +857,7 @@ def translator(request):
 	elif request.method == "POST":
 		user = request.user
 		words_to_training = request.POST["words"]
-		add_words_to_training(words_to_training, user)
+		dict_module.add_words_to_training(words_to_training, user)
 		return HttpResponse(status=200)
 		
 	 
@@ -1149,15 +962,15 @@ def calendar_view(request):
 			if len(request.GET) == 0:
 				new_path = request.path + "?month={}&year={}".format(month, year)
 				return HttpResponseRedirect(new_path)
-			weeks_list = get_month_data(month, year, user)
+			weeks_list = cal.get_month_data(month, year, user)
 			url = request.path
-			months_list = get_months_list(url, year)
+			months_list = cal.get_months_list(url, year)
 			params = {
 				'additional_stylesheet': additional_stylesheet,
 				'weeks_list': weeks_list,
 				'months_list': months_list,
 				'current_month': calendar.month_name[month],
-				'trainings_list': get_trainings_list(),
+				'trainings_list': cal.get_trainings_list(),
 				'trainings_amount': range(5)
 				}
 			return render(request, "calendar.html", params)
@@ -1189,95 +1002,6 @@ def calendar_view(request):
 				new_task = CalendarTask(user=user, date=date, training=task, amount=amount)
 				new_task.save()
 		return HttpResponse(status=200)
-		
-
-def get_months_list(url, year):
-	names = calendar.month_name
-	months_list = [
-					{
-	                 'name': names[i],
-				     'number': i,
-					 'url': "{}?month={}&year={}".format(url, i, year) 
-					 }  
-				  for i in range(13)]
-	return months_list[1:]
-
-
-def get_trainings_list():
-	trainings_list = [
-		              "",
-		              "Word-Translation",
-					  "Translation-Word",
-					  "Essay writing",
-					  "Words series",
-					  "Make a sentence",
-					  "Grammar training",
-					  "Topics training",
-					  ]
-	return trainings_list
-	
-
-def get_month_data(month, year, user):
-	month_range = calendar.monthcalendar(year, month)
-	weeks_list = []
-	for week in month_range:
-		week_list = []
-		week_day = 0
-		for day in week:
-			if day != 0:
-				date = datetime.datetime(year, month, day)
-				tasks_amount = get_trainings_amount(date, user)
-				compl_tasks = get_compl_tasks_amount(date, user)
-				print(date, tasks_amount, compl_tasks)
-			else:
-				tasks_amount = 0
-				compl_tasks = 0
-			day_dict = {
-						"number": day,
-						"weekday": week_day,
-						"amount": tasks_amount,
-						"completed": compl_tasks
-						}
-			week_day += 1
-			week_list.append(day_dict)
-		weeks_list.append(week_list)
-	return weeks_list
-
-
-def get_trainings_amount(date, user):
-	with connection.cursor() as cursor:
-		query = """
-		SELECT
-		SUM(t.amount) AS amount
-		FROM
-		work_app_calendartask AS t
-		WHERE
-		t.user_id = %s
-		AND
-		t.date = %s
-		"""
-		cursor.execute(query, [user.id, date])
-		selector = cursor.fetchall()
-		tasks = selector[0][0]
-		return tasks
-	
-	
-def get_compl_tasks_amount(date, user):
-	with connection.cursor() as cursor:
-		query = """
-		SELECT
-		Count(t.training)
-		FROM
-		work_app_completedtask AS t
-		WHERE
-		t.user_id = %s
-		AND
-		date_trunc('day', t.date) = %s
-		"""
-		cursor.execute(query, [user.id, date])
-		result = cursor.fetchall()
-		tasks_amount = result[0][0]
-		return tasks_amount
 		
 
 @login_required(login_url='/login/')

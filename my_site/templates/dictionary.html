@@ -14,16 +14,8 @@
 				<tr class = 'dictionary_row'>
 					<td class = "id_column" style = "display: none">{{word.id}}</td>
 					<td class = 'word_column'>{{word.word}}</td>
-					{% if word.translation != "nan" %}
 					<td class = 'translating_column'>{{word.translation}}</td>
-					{% else %}
-                    <td class = 'translating_column'></td>
-					{% endif %}
-					{% if word.transcription != "nan" %}
 					<td class = 'transcription_column'>{{word.transcription}}</td>
-					{% else %}
-                    <td class = 'transcription_column'></td>
-					{% endif %}
 				</tr>
 			{% endfor %}
 		</table>

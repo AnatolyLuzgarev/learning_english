@@ -12,8 +12,8 @@ from work_app.models import Word
 from work_app.models import GrammarRule
 from work_app.models import UserEssay
 from work_app.models import Topic
-from work_app.views import log
-from work_app.views import get_user_log
+from work_app.logs import log
+from work_app.logs import get_user_log
 from .serializers import TopicSerializer
 from .serializers import WordSerializer
 from .serializers import GrammarSerializer
