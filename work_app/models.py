@@ -1,13 +1,17 @@
+
+__author__ = "an.luzgarev"
+
+"""
+Models are stored here
+"""
+
 import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
 
-#We are going to create Python model
 class Word(models.Model):
-    #It is a general class for words we will be learning
     word = models.CharField(max_length=100)
     translation = models.CharField(max_length=300)
     first_letter = models.CharField(max_length=1)
@@ -19,7 +23,7 @@ class Word(models.Model):
     to_training = models.BooleanField(default=False)
 	   
     def __str__(self):
-        str_repr = "{}/{}/{}".format(self.word, self.translation, self.transcription)
+        str_repr = f"{self.word}/{self.translation}/{self.transcription}"
         return str_repr
 
 
@@ -31,7 +35,7 @@ class WordTraining(models.Model):
         db_table = "WordTraining"
     
     def __str__(self):
-        str_repr = "user: {}, word: {}".format(self.user, self.word)
+        str_repr = f"user: {self.user}, word: {self.word}"
         return str_repr
 		
 		
@@ -41,7 +45,7 @@ class Topic(models.Model):
     subject = models.CharField(max_length=100)
     
     def __str__(self):
-        return "Topic: {}, paragraph: {}, subject: {}".format(self.topic, self.paragraph, self.subject)
+        return f"Topic: {self.topic}, paragraph: {self.paragraph}, subject: {self.subject}"
 
 
 class Event(models.Model):
@@ -50,7 +54,7 @@ class Event(models.Model):
     event = models.CharField(max_length=500)
     
     def __str__(self):
-        return "{}: {}".format(self.date, self.event)
+        return f"{self.date}: {self.event}"
 	
 	
 class UserSettings(models.Model):
@@ -59,6 +63,7 @@ class UserSettings(models.Model):
 	
 	
 class EssayTheme(models.Model):
+	"""This models stores essay themes for trainings"""
 	theme = models.CharField(max_length=500)
 	
 	def __str__(self):
@@ -66,12 +71,13 @@ class EssayTheme(models.Model):
 	
 	
 class UserEssay(models.Model):
+	"""This models stores the essays have been written by a user"""
 	user = models.ForeignKey(User,on_delete=models.CASCADE)
 	theme = models.ForeignKey(EssayTheme, on_delete=models.CASCADE)
 	essay = models.TextField()
 	
 	def __str__(self):
-		return "{}/{}/{}".format(self.user, self.theme, self.essay)
+		return f"{self.user}/{self.theme}/{self.essay}"
 	
 	
 class UserLog(models.Model):
@@ -80,7 +86,7 @@ class UserLog(models.Model):
 	event = models.CharField(max_length=500)
 	
 	def __str__(self):
-		return "User {} at {} {}".format(self.user, self.date, self.event)
+		return f"User {self.user} at {self.date} {self.event}"
 	
 	
 class WordPicture(models.Model):
@@ -91,7 +97,7 @@ class WordPicture(models.Model):
 		db_table = "wordpicture"
 		
 	def __str__(self):
-		return "{}: {}".format(self.word.word, self.url)
+		return f"{self.word}: {self.url}"
 	
 	
 class GrammarSection(models.Model):
@@ -107,7 +113,7 @@ class GrammarRule(models.Model):
 	example = models.TextField()
 	
 	def __str__(self):
-		return "{}/{}".format(self.section, self.rule)
+		return f"{self.section}/{self.rule}"
 	
 	
 class CalendarTask(models.Model):
@@ -117,7 +123,7 @@ class CalendarTask(models.Model):
 	amount = models.IntegerField()
 
 	def __str__(self):
-		return "{}/{}/{}/{}".format(self.user, self.date, self.training, self.amount)
+		return f"{self.user}/{self.date}/{self.training}/{self.amount}"
 
 
 class CompletedTask(models.Model):
@@ -126,7 +132,7 @@ class CompletedTask(models.Model):
 	training = models.CharField(max_length=100)
 	
 	def __str__(self):
-		return "{}{}{}".format(self.user, self.date, self.training)
+		return f"{self.user}{self.date}{self.training}"
 	
 	
 	

@@ -7,6 +7,7 @@ Module containts functions for work with pictures
 
 import re
 import time
+import random
 
 import requests
 from .models import WordPicture
@@ -71,3 +72,19 @@ def load_pictures():
             word_picture = WordPicture(word_id=word[3], url=url)
             word_picture.save()
         time.sleep(60)
+		
+		
+def append_pictures(words):
+    for word in words:
+        word["picture_url"] = get_random_picture_url(word["id"])
+		
+
+def get_random_picture_url(word_id):
+	selection = WordPicture.objects.filter(word_id=word_id)
+	pict_list = list(selection)
+	if len(pict_list) > 0:
+		random_pict = random.choice(pict_list).url
+	else:
+		random_pict = ""
+	return random_pict			
+		

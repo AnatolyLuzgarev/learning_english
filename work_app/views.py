@@ -1,10 +1,10 @@
+
+__author__ = "an.luzgarev"
+
 import datetime
 import json
-import random
-import html
 import os
 import calendar
-import sys
 
 import requests
 from django.shortcuts import render
@@ -20,14 +20,17 @@ import work_app.dictionary as dict_module
 import work_app.logs as logs
 import work_app.pictures as pictures
 import work_app.calendar as cal
-from .models import Word, WordTraining, Topic, UserSettings, EssayTheme, UserEssay
-from .models import UserLog
-from .models import WordPicture
+import work_app.essays as essays
+import work_app.grammar as grammar_module
+import work_app.topics as topics_module
+import work_app.words_trainings as words_tr
+import work_app.cabinet as cabinet_module
+import work_app.files as files_module
+import work_app.consts as consts
+from .models import UserEssay
 from .models import CalendarTask
 from .models import CompletedTask
-from .models import GrammarSection, GrammarRule
 from .forms import TopicForm, RegisterForm
-from django.db import connection
 from .decorators import only_get
 from .decorators import only_get_post
 #Create your views here.
@@ -50,12 +53,10 @@ def register_view(request):
 			new_user.save()
 			return HttpResponseRedirect("/login")
 		except:
-			params = {
-				'form': reg_form
-				}
+			params = {'form': reg_form}
 			return render(request, "register_page.html", params)
 		
-		
+                                                                               		
 @csrf_exempt
 @only_get_post
 def login_view(request):
@@ -65,7 +66,6 @@ def login_view(request):
 		username = request.POST["login"]
 		password = request.POST["password"]
 		user = authenticate(request, username=username, password=password)
-		print(username,password,user)
 		if user is not None:
 			login(request,user)
 			return HttpResponseRedirect("/")
@@ -79,35 +79,31 @@ def logout_view(request):
 	return HttpResponseRedirect("/")
 
 
-@login_required(login_url="/login/")
+@login_required
 @only_get
 def index(request):
-	print(sys.path)
-	if request.method == "GET":
-		user = request.user
-		username = request.user.username
-		additional_stylesheet = get_user_stylesheet("welcome_page", user)
-		params = {
-			'username': username,
-			'additional_stylesheet': additional_stylesheet
-			}
-		return render(request,"welcome_page.html", params)
-	else:
-		return HttpResponse(status=501)
+	user = request.user
+	username = request.user.username
+	additional_stylesheet = cabinet_module.get_user_stylesheet("welcome_page", user)
+	params = {
+		'username': username,
+		'additional_stylesheet': additional_stylesheet
+		}
+	return render(request,"welcome_page.html", params)
 
 
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def cabinet(request):
 	if request.method == "GET":
 		user = request.user
-		additional_stylesheet = get_user_stylesheet("cabinet", user)
-		current_settings = get_current_settings(user)
-		training_words_amount = get_amount_training_words(user)
+		additional_stylesheet = cabinet_module.get_user_stylesheet("cabinet", user)
+		current_settings = cabinet_module.get_current_settings(user)
+		training_words_amount = cabinet_module.get_amount_training_words(user)
 		user_log = logs.get_user_log(user)
 		params = {
 		'current_settings': current_settings,
-		'amount': training_words_amount	,
+		'amount': training_words_amount,
 		'additional_stylesheet': additional_stylesheet,
 		'user_log': user_log,
 		'username': user.username
@@ -115,45 +111,15 @@ def cabinet(request):
 		return render(request, "cabinet.html", params)
 	elif request.method == "POST":
 		user = request.user
-		if request.headers["operation"] == "clear_trainings":
-			clear_all_trainings(user)
-			return HttpResponse(status=200)
-		elif request.headers["operation"] == "settings":
-			user = request.user
-			main_theme = request.POST.get("main_theme", "blue")
-			write_settings(main_theme, user)
-			return HttpResponse(status=200)
-		elif request.headers["operation"] == "clear_log":
-			UserLog.objects.filter(user = user).delete()
-			return HttpResponse(status=200)
-		elif request.headers["operation"] == "clear_essays":
-			UserEssay.objects.filter(user = user).delete()
-			return HttpResponse(status=200)
-
-
-def get_current_settings(user):
-	settings_value = UserSettings.objects.filter(user=user).values()
-	return settings_value
-
-			
-def write_settings(main_theme,user):
-	user_settings = UserSettings.objects.filter(user_id=user.id).all()
-	if len(user_settings) == 0:
-		settings_new = UserSettings(user=user, main_theme=main_theme)
-		settings_new.save()
-	else:
-		user_settings[0].main_theme = main_theme
-		user_settings[0].save()
-
-
-def get_amount_training_words(user):
-	amount = WordTraining.objects.filter(user_id=user.id).count()
-	return amount
-
+		operation = request.headers["operation"]
+		main_theme = request.POST.get("main_theme", "blue")
+		cabinet_module.process_post(operation, main_theme, user)
+		return HttpResponse(status=200)
+	
 
 #Settings section
 @csrf_exempt
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def initial_settings(request):
 	#Here we will handle our file with words
@@ -192,39 +158,20 @@ def initial_settings(request):
 			return HttpResponse("Error!")
 	elif request.method == "GET":
 		user = request.user
-		additional_stylesheet = get_user_stylesheet("settings", user)
-		params = {
-			'additional_stylesheet': additional_stylesheet
-			}
+		additional_stylesheet = cabinet_module.get_user_stylesheet("settings", user)
+		params = {'additional_stylesheet': additional_stylesheet}
 		rend_page = render(request, "settings.html", params)
 		return rend_page
 
 	
-def save_styles_in_file(params):
-	styles_dict = {}
-	conf_file_path = get_settings_path()
-	for x in params:
-		styles_dict[x] = params[x]
-	text_json = json.dumps(styles_dict)
-	with open(conf_file_path, 'w') as fw:
-		fw.write(text_json)
-
-
-def clear_all_trainings(user=None):
-	if user == None:
-		WordTraining.objects.all().delete()
-	else:
-		WordTraining.objects.filter(user_id=user.id).delete()
-		 
-	
 #---------------------------------------------------------------------
 #Trainings section
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def trainings(request):
 	if request.method == "GET":
 		user = request.user
-		additional_stylesheet = get_user_stylesheet("trainings", user)
+		additional_stylesheet = cabinet_module.get_user_stylesheet("trainings", user)
 		params = {
 			'additional_stylesheet': additional_stylesheet
 			}
@@ -238,32 +185,17 @@ def trainings(request):
 		compl_task.save()
 	
 
-def get_amount_of_words(letter):
-	words = Word.objects.filter(first_letter=letter)
-	amount_of_words = len(words)
-	return amount_of_words
-
-
-def process_amount_of_words(request,letter):
-	if request.POST.get("words_amount", 0) != 0:
-		return get_amount_of_words(letter)
-	else:
-		return 0
-
-
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def essay_writing(request):
 	user = request.user
-	additional_stylesheet = get_user_stylesheet("essay_writing", user)
-	params = {
-		'additional_stylesheet': additional_stylesheet
-		}
+	additional_stylesheet = cabinet_module.get_user_stylesheet("essay_writing", user)
+	params = {'additional_stylesheet': additional_stylesheet}
 	if request.method == "GET":
 		return render(request, "essay_writing.html", params)
 	elif request.method == "POST":
 		if request.headers["operation"] == "get_random_essay":
-			essay_dict = get_random_essay_theme()
+			essay_dict = essays.get_random_essay_theme()
 			return JsonResponse(essay_dict)
 		elif request.headers["operation"] == "add_to_collection":
 			user = request.user
@@ -273,44 +205,15 @@ def essay_writing(request):
 			new_essay.save()
 			
 
-def get_random_essay_theme():
-	selection = EssayTheme.objects.all().values("id", "theme")
-	themes_list = [theme for theme in selection]
-	theme = random.choice(themes_list)
-	value = {
-		'id': theme["id"],
-		'theme': theme["theme"]
-		}
-	return value
-
-
-def get_user_stylesheet(name,user=None):
-	user_settings = UserSettings.objects.filter(user=user).values("main_theme")
-	if len(user_settings) == 0:
-		style_dict = {
-			'main': 'styles_blue',
-			'additional': "{}_blue".format(name),
-			'theme': name
-			}
-		return style_dict
-	else:
-		style_dict = {
-			'main': "styles_{}".format(user_settings[0]["main_theme"].lower()),
-			'additional': name,
-			'theme': "{}_{}".format(name,user_settings[0]["main_theme"].lower())
-			}
-		return style_dict
-
-
 @csrf_exempt
-@login_required(login_url='/login/')
+@login_required
 @only_get_post
 def word_translation(request):
 	if request.method == "GET":
 		user = request.user
-		letters = [{'lower': letter.lower(), 'upper': letter.upper()} for letter in get_letters_list()]
-		additional_stylesheet = get_user_stylesheet("training_word_translation", user)
-		print(additional_stylesheet)
+		letters = [{'lower': letter.lower(), 'upper': letter.upper()} 
+			      for letter in dict_module.get_letters_list()]
+		additional_stylesheet = cabinet_module.get_user_stylesheet("training_word_translation", user)
 		params = {
 		'letters': letters,
 		'additional_stylesheet': additional_stylesheet
@@ -322,36 +225,22 @@ def word_translation(request):
 		training_words = request.POST.get("training_words", False)
 		show_picture = request.POST.get("show_picture", False)
 		user = request.user
-		total_array = get_array_of_words(letter, quantity, training_words,user)
+		total_array = words_tr.get_array_of_words(letter, quantity, training_words,user)
 		if show_picture:
-			append_pictures(total_array)
+			pictures.append_pictures(total_array)
 		str_repr = str(total_array)
 		return HttpResponse(str_repr)
 	
-	
-def append_pictures(words):
-    for word in words:
-        word["picture_url"] = get_random_picture_url(word["id"])
-		
-
-def get_random_picture_url(word_id):
-	selection = WordPicture.objects.filter(word_id=word_id)
-	pict_list = list(selection)
-	if len(pict_list) > 0:
-		random_pict = random.choice(pict_list).url
-	else:
-		random_pict = ""
-	return random_pict	
-
-   
+	   
 @csrf_exempt
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def translation_word(request):
 	if request.method == "GET":
 		user = request.user
-		letters = [{'lower': letter.lower(), 'upper': letter.upper()} for letter in get_letters_list()]
-		additional_stylesheet = get_user_stylesheet("training_word_translation", user)
+		letters = [{'lower': letter.lower(), 'upper': letter.upper()} 
+			 for letter in dict_module.get_letters_list()]
+		additional_stylesheet = cabinet_module.get_user_stylesheet("training_word_translation", user)
 		params = {
 			'letters': letters,
 			'additional_stylesheet': additional_stylesheet
@@ -362,19 +251,19 @@ def translation_word(request):
 		letter = request.POST.get("letter", "all").lower()
 		training_words = request.POST.get("training_words", False)
 		user = request.user
-		print(quantity,letter,user,training_words)
-		total_array = get_array_of_words(letter, quantity, training_words, user)
+		total_array = words_tr.get_array_of_words(letter, quantity, training_words, user)
 		str_repr = str(total_array)
 		return HttpResponse(str_repr)
 
 
-@login_required(login_url='/login/')
+@login_required
 @only_get_post
 def make_a_sentence(request):
 	if request.method == "GET":
 		user = request.user
-		letters = [{'lower': letter.lower(),'upper': letter.upper()} for letter in get_letters_list()]
-		additional_stylesheet = get_user_stylesheet("categories_training", user)
+		letters = [{'lower': letter.lower(),'upper': letter.upper()} 
+			 for letter in dict_module.get_letters_list()]
+		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
 		params = {
 			'letters': letters,
 			'additional_stylesheet': additional_stylesheet
@@ -385,54 +274,18 @@ def make_a_sentence(request):
 		quantity = int(request.POST.get("quantity", 0));
 		letter = request.POST.get("letter", "all")
 		training_words = request.POST.get("training_words", False)
-		total_array = get_array_of_words(letter, quantity, training_words, user)
+		total_array = words_tr.get_array_of_words(letter, quantity, training_words, user)
 		str_repr = json.dumps(total_array, ensure_ascii=False).encode('utf8')
 		return HttpResponse(str_repr)	
 
 
-def get_array_of_words(letter, quantity, training_words=False, user=None):
-	total_array = []
-	if training_words:
-		with connection.cursor() as cursor:
-			query = """SELECT
-			work_app_word.word AS word,
-			work_app_word.translation AS translation,
-			work_app_word.transcription AS transcription,
-			work_app_word.id AS id
-			FROM
-			work_app_word 
-			INNER JOIN
-			wordtraining
-			ON work_app_word.id = wordtraining.word_id
-			WHERE wordtraining.user_id = %s 
-			"""
-			if letter == "all":
-				cursor.execute(query, [user.id])
-			else:
-				query = query + " AND work_app_word.first_letter = %s"
-				cursor.execute(query,[user.id, letter])
-			selector = cursor.fetchall()
-			for x in selector:
-				word = {'word': x[0], 'translation': x[1], 'transcription': x[2], 'id': x[3]}
-				total_array.append(word)
-	else:
-		if letter == "all":
-			selection = Word.objects.all().values()
-		else:
-			selection = Word.objects.filter(first_letter=letter).values()
-		total_array = [x for x in selection]
-	random.shuffle(total_array)
-	total_array = total_array[0:min(quantity, len(total_array))]
-	return total_array
-
-
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def phrasal_verbs(request):
 	if request.method == "GET":
 		user = request.user
-		phrasal_verbs = get_phrasal_verbs_list()
-		additional_stylesheet = get_user_stylesheet("categories_training", user)
+		phrasal_verbs = words_tr.get_phrasal_verbs_list()
+		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
 		params = {
 			'phrasal_verbs': phrasal_verbs,
 			'additional_stylesheet': additional_stylesheet
@@ -440,61 +293,18 @@ def phrasal_verbs(request):
 		return render(request, "phrasal_verbs.html", params)
 	elif request.method == "POST":
 		ph_word = request.POST["phrasal_verb"]
-		response = str(get_phrasal_verbs(ph_word))
+		response = str(words_tr.get_phrasal_verbs(ph_word))
 		return HttpResponse(response)
 
 
-def get_phrasal_verbs_list():
-	query = "SELECT work_app_word.* FROM work_app_word WHERE work_app_word.category =  'Phrasal verb'"
-	selector = Word.objects.raw(query)
-	selector = Word.objects.filter(category='Phrasal verb').distinct()
-	words_array = [x.word for x in selector]
-	words_array = process_phrasal_verbs_array(words_array)
-	words_array = prosses_phrasal_verbs_doubles(words_array)
-	return words_array
-
-
-def process_phrasal_verbs_array(array):
-	array_words = []
-	for x in array:
-		arr = x.split(" ")
-		curr_word = arr[0]
-		array_words.append(curr_word)
-	return array_words
-
-
-def prosses_phrasal_verbs_doubles(array):
-	array_2 = []
-	for x in array:
-		try:
-			array_2.index(x)
-		except:
-			array_2.append(x)
-	return array_2
-
-
-def get_phrasal_verbs(word):
-	query = """SELECT 
-	work_app_word.* 
-	FROM work_app_word 
-	WHERE work_app_word.category =  'Phrasal verb'"""
-	selector = Word.objects.raw(query)
-	words_array = []
-	for x in selector:
-		arr = x.word.split(" ")
-		if arr[0] == word:
-			words_array.append({"word": x.word, "translation": x.translation})
-	return words_array
-	return words_array
-
-
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def words_series(request):
 	if request.method == "GET":
 		user = request.user
-		letters = [{'lower': letter.lower(),'upper': letter.upper()} for letter in get_letters_list()]
-		additional_stylesheet = get_user_stylesheet("categories_training", user)
+		letters = [{'lower': letter.lower(),'upper': letter.upper()} 
+			       for letter in dict_module.get_letters_list()]
+		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
 		params = {
 		'letters': letters,
 		'additional_stylesheet': additional_stylesheet
@@ -505,19 +315,19 @@ def words_series(request):
 		quantity = int(request.POST["quantity"])
 		user = request.user
 		training_words = request.POST.get("training_words", False)
-		words = get_array_of_words(letter, quantity, training_words, user)
+		words = words_tr.get_array_of_words(letter, quantity, training_words, user)
 		words_str = json.dumps(words)
 		return HttpResponse(words_str)
 
 
 #Grammar training section---------------------------------------------
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def grammar_training(request):
 	if request.method == "GET":
 		user = request.user
-		grammar_sections = get_grammar_sections()
-		additional_stylesheet = get_user_stylesheet("categories_training", user)
+		grammar_sections = grammar_module.get_grammar_sections()
+		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
 		params = {
 			'grammar_sections': grammar_sections,
 			'additional_stylesheet': additional_stylesheet
@@ -526,84 +336,19 @@ def grammar_training(request):
 	elif request.method == "POST":
 		section = request.POST.get("section", "all")
 		section = section.replace("_", " ")
-		random_rule = get_grammar_rule(section)
-		rule_dict = {
-			"rule": random_rule
-			}
+		random_rule = grammar_module.get_grammar_rule(section)
+		rule_dict = {"rule": random_rule}
 		return JsonResponse(rule_dict)
 	
 	
-class GrammarParser(html.parser.HTMLParser):
-	grammar_sections = []
-	grammar_rules = []
-	current_tag = ""
-	current_class = ""
-	section = ""
-	section_flag = False
-	
-	def handle_starttag(self, tag, attrs):
-		self.current_tag = tag
-		if len(attrs) > 0:
-			self.current_class = attrs[0][1]
-			
-	def handle_data(self, data):
-		if self.current_tag == "h3":
-			if self.section == "":
-				self.grammar_sections.append(data.strip())
-			if data.strip() == self.section:
-				self.section_flag = True
-			else:
-				self.section_flag = False
-		if self.section_flag:
-			if self.current_class == "clause_point":
-				self.grammar_rules.append(data)
-	
-	def get_grammar_sections(self):
-		return self.grammar_sections
-	
-	def get_grammar_rules(self):
-		return self.grammar_rules
-	
-	
-def get_grammar_sections():
-	parser = GrammarParser()
-	data = get_grammar_text_data()	
-	parser.feed(data)
-	grammar_sections = parser.get_grammar_sections()
-	print(grammar_sections)
-	formatted_sections = [{'val': x.replace(" ", "_"), 'repr': x} for x in grammar_sections]
-	return formatted_sections
-
-
-def get_grammar_rule(grammar_section):
-	parser = GrammarParser()
-	data = get_grammar_text_data()
-	parser.section = grammar_section
-	parser.feed(data)
-	grammar_rules = parser.get_grammar_rules()
-	random_rule =random.choice(grammar_rules)
-	return random_rule
-	
-
-def get_grammar_text_data():
-	template_path = os.path.join(settings_set.BASE_DIR, r'my_site/templates/grammar.html')
-	with open(template_path, 'r', encoding="utf-8") as fr:
-		data = fr.read()
-		data = data.replace("\t", "")
-		data = data.replace("\n", "")
-		first_tag = data.find("<ul>")
-		data = data[first_tag:]
-	return data
-
-
 #Categories training----------------------------------------------------------------
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def categories_training(request):
 	if request.method == "GET":
 		user = request.user
-		categories_list = get_list_of_categories()
-		additional_stylesheet = get_user_stylesheet("categories_training", user)
+		categories_list = words_tr.get_list_of_categories()
+		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
 		parameters = {
 			'categories_list': categories_list,
 			'additional_stylesheet': additional_stylesheet
@@ -611,38 +356,19 @@ def categories_training(request):
 		return render(request, "categories_training.html", parameters)
 	elif request.method == "POST":
 		category = request.POST["category"]
-		words = words_of_category(category)
-		json_object = {
-		'words': words
-		}
+		words = words_tr.words_of_category(category)
+		json_object = {'words': words}
 		json_response = JsonResponse(json_object)
 		return json_response
 
 
-def words_of_category(category):
-	words_list = []
-	words = Word.objects.filter(category=category).distinct()
-	for x in words:
-		words_list.append(x.word)
-	return words_list
-
-
-def get_list_of_categories():
-	categories_list = []
-	objects = Word.objects.values("category").distinct()
-	for x in objects:
-		if x['category'] != 'nan' and x['category'] != 'Phrasal verb':
-			categories_list.append(x['category'])
-	return categories_list
-
-
 #Topics training ----------------------------------------------------------------
-@login_required(login_url = "/login/")
+@login_required
 @only_get
 def topics(request):
 	user = request.user
-	topics_list = get_topics_list()
-	additional_stylesheet = get_user_stylesheet("topics", user)
+	topics_list = topics_module.get_topics_list()
+	additional_stylesheet = cabinet_module.get_user_stylesheet("topics", user)
 	params = {
 		'topics_list':topics_list,
 		'additional_stylesheet': additional_stylesheet
@@ -650,13 +376,7 @@ def topics(request):
 	return render(request,"topics.html",params)
 
 
-def get_topics_list():
-	topics = Topic.objects.all().values()
-	topics_list = [topic for topic in topics]
-	return topics_list
-
-
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def new_topic(request):
 	if request.method == "GET":
@@ -676,12 +396,12 @@ def new_topic(request):
 def topics_training(request):
 	if request.method == "GET":
 		user = request.user
-		subjects_list = get_subjects()
+		subjects_list = topics_module.get_subjects()
 		if len(subjects_list) > 0:
-			paragraphs_list = get_paragraphs(subjects_list[0])
+			paragraphs_list = topics_module.get_paragraphs(subjects_list[0])
 		else:
 			paragraphs_list = []
-		additional_stylesheet = get_user_stylesheet("categories_training", user)
+		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
 		parameters = {
 		'subjects_list': subjects_list,
 		'paragraphs_list': paragraphs_list,
@@ -695,61 +415,30 @@ def topics_training(request):
 		paragraph = request.POST["paragraph"].replace("@", " ")
 		action = headers["action"]
 		if action == "paragraphs_list":
-			paragraphs_list = get_paragraphs(subject)
+			paragraphs_list = topics_module.get_paragraphs(subject)
 			paragraphs_dict = {"paragraphs": paragraphs_list}
 			response_json = JsonResponse(paragraphs_dict)
 			return response_json
 		elif action == "topics_list":
-			topics_list = get_topics(paragraph,subject)
+			topics_list = topics_module.get_topics(paragraph,subject)
 			topics_dict = {"topics": topics_list}
 			response_json = JsonResponse(topics_dict)
 			return response_json
 
 
-def get_subjects():
-	subjects = Topic.objects.values("subject").distinct()
-	subjects_list = [x["subject"] for x in subjects]
-	return subjects_list
-
-
-def get_paragraphs(subject=None):
-	if subject == None:
-		paragraphs = Topic.objects.values("paragraph").distinct()
-	else:
-		paragraphs = Topic.objects.filter(subject=subject).values("paragraph").distinct()
-	paragraphs_list = [ {'value': x["paragraph"].replace(" ","@"), 'repr': x["paragraph"]} for x in paragraphs]
-	paragraphs_list.append({'value':'all','repr':'All'})
-	return paragraphs_list
-
-
-def get_topics(paragraph=None, subject=None):
-	if paragraph == None:
-		topics = Topic.objects.values("topic").distinct()
-	else:
-		topics = Topic.objects.filter(paragraph = paragraph).values("topic").distinct()
-	topics_list = [x["topic"] for x in topics]
-	random.shuffle(topics_list)
-	return topics_list
-
-def t(var):
-	return HttpResponse(str(var))
-
-
 #------------------------------------------------------------------------------------
 #Dictionary
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def dictionary(request):
 	if request.method == "GET":
 		user = request.user
 		words_list = dict_module.get_words()
-		letters_list = get_letters_list()
-		dictionary_style = build_style_string()
-		addinional_stylesheet = get_user_stylesheet("dictionary", user)
+		letters_list = dict_module.get_letters_list()
+		addinional_stylesheet = cabinet_module.get_user_stylesheet("dictionary", user)
 		words_dict = {
 		'words_list':words_list,
 		'letters_list': letters_list,
-		'dictionary_style': dictionary_style,
 		'additional_stylesheet': addinional_stylesheet
 		}
 		return render(request, "dictionary.html", words_dict)
@@ -761,14 +450,14 @@ def dictionary(request):
 				word = request.POST["picture_word"]
 				translation = request.POST["picture_translation"]
 				binary_data = picture_file.read()
-				save_picture_on_server(binary_data,word,translation)
+				dict_module.save_picture_on_server(binary_data,word,translation)
 				return HttpResponse(status = 200)
 			else:
 				word = request.POST["picture_word"]
 				translation = request.POST["picture_translation"]
 				result = requests.get(picture_url)
 				binary_data = result.content
-				save_picture_on_server(binary_data, word, translation)
+				dict_module.save_picture_on_server(binary_data, word, translation)
 				return HttpResponse(status=200)
 		elif request.headers["operation"] == "words_to_training":
 			words_to_training = request.POST["words_to_training"]
@@ -777,19 +466,17 @@ def dictionary(request):
 			return HttpResponse(status=200)
 
 
-@login_required(login_url = "/login/")
+@login_required
 def dictionary_letter(request, letter):
 	if request.method == "GET":
 		user = request.user
 		letter_low = letter.lower()
 		words_list = dict_module.get_words(letter_low, user)
-		letters_list = get_letters_list()
-		addinional_stylesheet = get_user_stylesheet("dictionary", user)
-		dictionary_style = build_style_string()
+		letters_list = dict_module.get_letters_list()
+		addinional_stylesheet = cabinet_module.get_user_stylesheet("dictionary", user)
 		words_dict = {
 		'words_list':words_list,
 		'letters_list': letters_list,
-		'dictionary_style': dictionary_style,
 		'additional_stylesheet': addinional_stylesheet
 		}
 		return render(request, "dictionary.html", words_dict) 
@@ -801,58 +488,19 @@ def dictionary_letter(request, letter):
 			return HttpResponse(status=200)
 		
 
-def get_letters_list():
-	a_ord = ord("A")
-	z_ord = ord("Z")
-	letters_list = [chr(i) for i in range(a_ord, z_ord+1)]
-	return letters_list
-
-
-def save_picture_on_server(binary_data, word, translation):
-	dirname = os.path.join(settings_set.BASE_DIR, r"my_site/static_files/words_pictures")
-	basename = "{}_{}.jpg".format(word, translation).replace(" ", "_")
-	file_name = os.path.join(dirname, basename) 
-	with open(file_name,'wb') as fw:
-		fw.write(binary_data)
-
-
-def get_list_of_styles():
-	path = get_settings_path()
-	json_text = ""
-	with open(path, 'r') as fr:
-		json_text = fr.read()
-	settings_dict = json.loads(json_text)
-	return settings_dict
-
-
-def build_style_string():
-	settings_dict = get_list_of_styles()
-	if len(settings_dict) == 0:
-		return ""
-	style_str = "style = '"
-	for x in settings_dict:
-		if settings_dict[x] == "default":
-			continue
-		style_str = style_str + str(x).replace("_", "-") + ":" + str(settings_dict[x]) + "; " 
-	style_str = style_str + "'"
-	return style_str
-
-
 def get_settings_path():
 	path = os.path.join(settings_set.BASE_DIR, r"my_site/static_files/text/settings.json")
 	return path
 
 	
 #Translator-----------------------------------------------------------------
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def translator(request):
 	if request.method == "GET":
 		user = request.user
-		additional_stylesheet = get_user_stylesheet("translator", user)
-		params = {
-			"additional_stylesheet": additional_stylesheet
-			}
+		additional_stylesheet = cabinet_module.get_user_stylesheet("translator", user)
+		params = {"additional_stylesheet": additional_stylesheet}
 		return render(request, "translator.html", params)
 	elif request.method == "POST":
 		user = request.user
@@ -861,13 +509,14 @@ def translator(request):
 		return HttpResponse(status=200)
 		
 	 
-   #---------------------------------------------------------------------------
-
+#---------------------------------------------------------------------------
 #Grammar
+@login_required
+@only_get
 def grammar(request):
 	user = request.user
-	additional_stylesheet = get_user_stylesheet("grammar", user)
-	sections = get_grammar_list()
+	additional_stylesheet = cabinet_module.get_user_stylesheet("grammar", user)
+	sections = grammar_module.get_grammar_list()
 	params = {
 		'additional_stylesheet': additional_stylesheet,
 		'sections': sections
@@ -875,35 +524,17 @@ def grammar(request):
 	return render(request,"grammar.html",params)
 
 
-def get_grammar_list():
-	all_sections = GrammarSection.objects.all()
-	main_list = []
-	for section in all_sections:
-		rules = GrammarRule.objects.filter(section=section).values("rule", "example")
-		rules_list = [{"rule": rule["rule"],"example": rule["example"]} for rule in rules]
-		new_elem = {
-			"section": section.name,
-			"rules": rules_list
-		}
-		main_list.append(new_elem)
-	return main_list
-
-
+@login_required
+@only_get
 def my_essays(request):
 	user = request.user
-	essays_list = get_essays_list(user)
-	additional_stylesheet = get_user_stylesheet("my_essays", user)
-	print(essays_list)
+	essays_list = essays.get_essays_list(user)
+	additional_stylesheet = cabinet_module.get_user_stylesheet("my_essays", user)
 	params = {
 		"essays_list": essays_list,
 		"additional_stylesheet": additional_stylesheet
 		}
 	return render(request, "my_essays.html", params)
-
-def get_essays_list(user):
-	selection = UserEssay.objects.filter(user=user)
-	essays_list = [{"theme": elem.theme.theme, "essay": elem.essay} for elem in selection]
-	return essays_list
 
 
 #toefl---------------------------------------------------------------------
@@ -913,50 +544,38 @@ def toefl(request):
 
 #--------------------------------------------------------
 #Files
-@login_required(login_url="/login/")
+@login_required
 @only_get
 def files(request):
-	if request.method == "GET":
-		user = request.user
-		files_list = get_list_of_files()
-		additional_stylesheet = get_user_stylesheet("files", user=user)
-		params = {
-			'files_list': files_list,
-			'additional_stylesheet': additional_stylesheet
-			}
-		return render(request,"files.html",params)
+	user = request.user
+	files_list = files_module.get_list_of_files()
+	additional_stylesheet = cabinet_module.get_user_stylesheet("files", user=user)
+	params = {
+		'files_list': files_list,
+		'additional_stylesheet': additional_stylesheet
+		}
+	return render(request,"files.html",params)
 
 
+@login_required
+@only_get
 def get_file(request, filename):
-	if request.method == "GET":
-		path_file = get_files_path() + "/" + filename
-		with open(path_file,'rb') as fr:
-			content = fr.read()
-		response = HttpResponse(content)
-		response["content-type"] = "application/octet-stream"
-		response["content-disposition"] = "attachment; filename=" + filename
-		return response
-	elif request.method == "POST":
-		return HttpResponse("It is not ready yet!")
+	path_file = files_module.get_files_path() + "/" + filename
+	with open(path_file,'rb') as fr:
+		content = fr.read()
+	response = HttpResponse(content)
+	response["content-type"] = "application/octet-stream"
+	response["content-disposition"] = "attachment; filename=" + filename
+	return response
 
 
-def get_list_of_files():
-	path = get_files_path()
-	list_of_files = os.listdir(path)
-	return list_of_files
-
-
-def get_files_path():
-	return os.path.join(settings_set.BASE_DIR, r"my_site/files")
-
-
-@login_required(login_url="/login/")
+@login_required
 @only_get_post
 def calendar_view(request):
 	if request.method == "GET":
 		if request.headers.get("operation", "") != "get_tasks":
 			user = request.user
-			additional_stylesheet = get_user_stylesheet("style", user)
+			additional_stylesheet = cabinet_module.get_user_stylesheet("style", user)
 			month = int(request.GET.get("month", datetime.datetime.now().month))
 			year = int(request.GET.get("year", datetime.datetime.now().year))
 			if len(request.GET) == 0:
@@ -1004,13 +623,13 @@ def calendar_view(request):
 		return HttpResponse(status=200)
 		
 
-@login_required(login_url='/login/')
+@login_required
 @only_get
 def api_list(request):
 	if request.method == "GET":
 		user = request.user
-		api_list = get_api_list()	
-		additional_stylesheet = get_user_stylesheet("api_list", user)
+		api_list = consts.API_LIST
+		additional_stylesheet = cabinet_module.get_user_stylesheet("api_list", user)
 		params = {
 			"api_list": api_list,
 			"additional_stylesheet": additional_stylesheet
@@ -1018,17 +637,7 @@ def api_list(request):
 		return render(request, "api_list.html", params)
 
 
-def get_api_list():
-	api_list = [
-	"get_auth_token",
-    "get_translation",
-    "training_letter",
-    "get_topics",
-	"get_grammar",
-	"get_essays",
-	"logs"
-	]
-	return api_list
+
 	
 
 

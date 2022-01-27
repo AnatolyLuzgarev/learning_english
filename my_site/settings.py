@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'np)04dv3)yhke2qe0!*z%ahz5!^4emli-=hz$83u%=ks_5!h7b'
 
 #DB that is in use
-AVAILABLE_DB = ["sqlite","postgres"]
+AVAILABLE_DB = ["sqlite", "postgres"]
 CURRENT_DB = AVAILABLE_DB[1]
 
 
@@ -140,6 +140,9 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+#Default login page
+LOGIN_URL = "/login/"
 
 
 # Static files (CSS, JavaScript, Images)

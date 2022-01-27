@@ -1,7 +1,7 @@
 
 __author__ = "an.luzgarev"
 
-"""This module contains functions for loading initial data
+"""Contains functions for loading initial data
 (words, essay themes, topics, grammar)"""
 
 import io
@@ -15,8 +15,9 @@ from .models import Word, Topic, EssayTheme
 from .models import GrammarSection, GrammarRule
 
 
-def load_all_data():
-	"""Loads all the data"""
+def load_all_data()-> None:
+	"""Loads all the data from the files in the project catalog: 
+	words, topics, grammar, essay themes"""
 	files_catalog = os.path.join(settings_set.BASE_DIR, r'my_site/files')
 	print(files_catalog)
 	words_path = os.path.join(files_catalog, "Words.xlsx")
@@ -82,7 +83,9 @@ def write_grammar(content):
 						example = clause_list[1].text.strip()
 					else:
 						example = ""
-					new_rule = GrammarRule(section=current_section, rule=rule, example=example)
+					new_rule = GrammarRule(section=current_section,
+										   rule=rule,
+										   example=example)
 					new_rule.save()
 
 
