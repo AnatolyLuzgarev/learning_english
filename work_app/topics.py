@@ -10,13 +10,19 @@ import random
 from .models import Topic
 
 
+def get_subjects():
+	subjects = Topic.objects.values("subject").distinct()
+	subjects_list = [x["subject"] for x in subjects]
+	return subjects_list
+
+
 def get_paragraphs(subject=None):
 	if subject == None:
 		paragraphs = Topic.objects.values("paragraph").distinct()
 		paragraphs = paragraphs.order_by("paragraph")
 	else:
-		paragraphs = Topic.objects.filter(subject=subject).values("paragraph").distinct()
-		paragraphs = paragraphs.order_by("paragraph")
+		paragraphs = Topic.objects.filter(subject=subject).values("paragraph")
+		paragraphs = paragraphs.distinct().order_by("paragraph")
 	paragraphs_list = [{'value': x["paragraph"].replace(" ","@"),
 					    'repr': x["paragraph"]} for x in paragraphs]
 	paragraphs_list.append({'value':'all','repr':'All'})
@@ -39,7 +45,3 @@ def get_topics_list():
 	return topics_list
 
 
-def get_subjects():
-	subjects = Topic.objects.values("subject").distinct()
-	subjects_list = [x["subject"] for x in subjects]
-	return subjects_list

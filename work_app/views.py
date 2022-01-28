@@ -172,9 +172,7 @@ def trainings(request):
 	if request.method == "GET":
 		user = request.user
 		additional_stylesheet = cabinet_module.get_user_stylesheet("trainings", user)
-		params = {
-			'additional_stylesheet': additional_stylesheet
-			}
+		params = {'additional_stylesheet': additional_stylesheet}
 		return render(request, "trainings.html", params)
 	elif request.method == "POST":
 		user = request.user
@@ -387,8 +385,6 @@ def new_topic(request):
 		model_form = TopicForm(request.POST)
 		model_form.save()
 		return HttpResponseRedirect("/topics")
-	else:
-		return HttpResponse("Internal error: 500")
 
 
 @csrf_exempt
@@ -443,27 +439,30 @@ def dictionary(request):
 		}
 		return render(request, "dictionary.html", words_dict)
 	elif request.method == "POST":
-		if request.headers["operation"] == "picture_uploading":
-			picture_url = request.POST.get("picture_url", "")
-			if picture_url == "":
-				picture_file = request.FILES["picture_file"]
-				word = request.POST["picture_word"]
-				translation = request.POST["picture_translation"]
-				binary_data = picture_file.read()
-				dict_module.save_picture_on_server(binary_data,word,translation)
-				return HttpResponse(status = 200)
-			else:
-				word = request.POST["picture_word"]
-				translation = request.POST["picture_translation"]
-				result = requests.get(picture_url)
-				binary_data = result.content
-				dict_module.save_picture_on_server(binary_data, word, translation)
-				return HttpResponse(status=200)
-		elif request.headers["operation"] == "words_to_training":
+		if request.headers["operation"] == "words_to_training":
 			words_to_training = request.POST["words_to_training"]
 			user = request.user
 			dict_module.add_words_to_training(words_to_training, user)
 			return HttpResponse(status=200)
+		elif request.headers["operation"] == "picture_uploading":
+			process_pictures(request)
+			return HttpResponse(status=200)
+			
+
+def process_pictures(request):
+	picture_url = request.POST.get("picture_url", "")
+	if picture_url == "":
+		picture_file = request.FILES["picture_file"]
+		word = request.POST["picture_word"]
+		translation = request.POST["picture_translation"]
+		binary_data = picture_file.read()
+		dict_module.save_picture_on_server(binary_data,word,translation)
+	else:
+		word = request.POST["picture_word"]
+		translation = request.POST["picture_translation"]
+		result = requests.get(picture_url)
+		binary_data = result.content
+		dict_module.save_picture_on_server(binary_data, word, translation)
 
 
 @login_required
@@ -622,7 +621,7 @@ def calendar_view(request):
 				new_task.save()
 		return HttpResponse(status=200)
 		
-
+	
 @login_required
 @only_get
 def api_list(request):
