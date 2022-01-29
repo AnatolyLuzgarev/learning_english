@@ -43,19 +43,7 @@ def get_amount_training_words(user):
 	return amount
 
 
-def get_user_stylesheet(name, user=None):
+def get_user_theme(name, user=None):
 	user_settings = UserSettings.objects.filter(user=user).values("main_theme")
-	if len(user_settings) == 0:
-		style_dict = {
-			'main': 'styles_blue',
-			'additional': "{}_blue".format(name),
-			'theme': name
-			}
-		return style_dict
-	else:
-		style_dict = {
-			'main': "styles_{}".format(user_settings[0]["main_theme"].lower()),
-			'additional': name,
-			'theme': "{}_{}".format(name,user_settings[0]["main_theme"].lower())
-			}
-		return style_dict
+	return user_settings[0]["main_theme"].lower()
+ 

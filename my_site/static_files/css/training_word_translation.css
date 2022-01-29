@@ -1,7 +1,10 @@
+
+@import url("themes.css");
+
 #training_container {
   display: block;
   width:55%;
-  height: : 900px;
+  height: 900px;
   padding: 10px;
   }
 
@@ -31,7 +34,7 @@
  #container_buttons {
     display: block;
     position: relative;
-    width: 100%
+    width: 100%;
     left: 70%;
     bottom: 5%;
     top: 20px;
@@ -104,3 +107,19 @@
       position: relative;
       top: -8px;
      }
+
+
+     #training_container {
+      background-color: #417690;
+    }
+    
+       #word_container {
+      background-color: white;
+     }
+    
+      .settings_label {
+      color: white;
+      }
+    
+     
+    

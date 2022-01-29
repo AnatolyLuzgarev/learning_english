@@ -1,147 +1,137 @@
 {% extends "base_page.html" %}
 
-
-{% block styles %}
-<style>
-  #topics_list {
-  font-size: 25px;
-  color: #f5dd5d;
-  font-family: cursive;
-  margin-left: 20px;
-  }
-</style>
+{% block additional_styles %}
+  
 {% endblock %}
 
+{% block additional_scripts %}
+<script src = "/static/js/react.development.js"></script>
+<script src = "/static/js/react-dom.development.js"></script> 
+<script src = "/static/js/babel.js"></script> 
+<script src = "/static/js/common_scripts.js" type="text/javascript"></script>
+{% endblock %}
 
+{% block styles %}
+<link rel = "stylesheet" type = "text/css" href = "/static/css/topics.css">
+{% endblock %}
 
-        {% block content %}
-        <div id = "training_container">
-            <form name = "training_settings_form" method = "post" action = "#" onsubmit="return checkForm()">
-                {% csrf_token %}
-                <label class = "settings_label" for = "subject"> Subject: </label>
-                
-                <select id = "subject" name = "subject" change = "subject_change()">
-                    {% for subject in subjects_list %}
-                        <option value = {{subject}}>{{subject}}</option>
-                    {% endfor %}
-                </select>
+{% block content %}
+<div id="training_container"></div>
+{% endblock %}
 
+{% block script %}
+<script  type = "text/babel">
 
-                <label class = "settings_label" for = "paragraph"> Paragraph: </label>
+function submit() {
 
-                <select  id = "paragraph" name = "paragraph">
-                     {% for paragraph in paragraphs_list %}
-                         <option value = {{paragraph.value}}>{{paragraph.repr}}</option>
-                     {% endfor %}
-                </select>
-                <button type = "button" class = "button_training_panel" id = "button_begin"> <div id = "button_id"> Begin test </div> <img id ="button_icon_id" src = "/static/images/icons/begin.png" /> </button>
-                  <a id = "topics_list" href = {% url 'topics' %}> List of topics </a>
-           </form>
-            <div id = "training_panel">
-               <div id = "current_word" style = "font-size: 25px; padding: 10px"> <label id = "current_word_label"></label> </div>
-               <button id = "button_next_categories"> Next </button>
-               <textarea id = "topic_textarea">
+}
 
-               </textarea> 
-            </div>
-        </div>
-        {% endblock %}
-       
-        {% block script %}
-        <script>
-        var words = []
-        var current_index = 0
+ var subjects = []
+ var paragraphs = []
 
-        document.getElementById("subject").addEventListener("change", subject_change)
+ function ajax_get_sync(action, key=undefined, parameters=undefined) {
+    var xhr = new XMLHttpRequest()
+    var url_str = window.location.href
+    url_str = url_str + get_params_string(parameters)
+    xhr.open("GET", url_str, false)
+    xhr.setRequestHeader("action", action)
+    xhr.send(null)
+    var response = xhr.responseText
+    if (key == undefined) {
+      var value = JSON.parse(response)
+    }
+    else {
+      var value = JSON.parse(response)[key]
+    }
+    return value
+  }
 
-
-    function subject_change() {
-       var xhr = new XMLHttpRequest()
-       var form = document.forms[0]
-       var fd = new FormData(form)
-       xhr.onreadystatechange = function() {
-          if (this.readyState == 4) {
-            response = this.responseText
-            json_resp = JSON.parse(response)
-            paragraphs_list = json_resp["paragraphs"]
-            build_select_paragraph(paragraphs_list)
-            }  
-        }
-       url = location.href
-       xhr.open("POST",url)
-       xhr.setRequestHeader("action", "paragraphs_list")
-       xhr.send(fd)
+class TopicsContainer extends React.Component {
+   
+  constructor(props) {
+    super(props)
+    this.curr_index = 0
+    this.topics = []
+    this.state = {
+       subjects: props["subjects"],
+       paragraphs: props["paragraphs"],
+       curr_subject: props["subjects"][0],
+       curr_paragraph: props["paragraphs"][0],
+       curr_topic: ""
       }
+    this.change_subject = this.change_subject.bind(this)
+    this.change_paragraph = this.change_paragraph.bind(this)
+    this.begin_test = this.begin_test.bind(this)
+    this.next_topic = this.next_topic.bind(this)
+  }
 
-      function build_select_paragraph(paragraphs_list) {
-        var paragr_select = document.getElementById("paragraph")
-        innerHTML = ""
-        for (var i in paragraphs_list) {
-            innerHTML = innerHTML + "<option value = '"+paragraphs_list[Number(i)]["value"]+"'>"+paragraphs_list[Number(i)]["repr"]+"</option>"
-        }
-        paragr_select.innerHTML = innerHTML
-        }
+  change_subject(event) {
+    var paragraphs = ajax_get_sync("paragraphs_list", "paragraphs", {"subject": event.target.value})
+    this.setState({paragraphs: paragraphs, curr_subject: event.target.value, curr_paragraph: paragraphs[0]})
+  }
 
+  change_paragraph(event) {
+    this.setState({curr_paragraph: event.target.value})
+  }
 
-        function get_topics() {
-            current_index = 0
-            $("#training_panel").show()
-            var fd = new FormData(document.forms[0])
-            var xhr = new XMLHttpRequest()
-            xhr.onreadystatechange = function() {
-                if (this.readyState == 4) {
-                response = xhr.responseText
-                words = JSON.parse(response)["topics"]
-                set_next_word()
-                }
+  begin_test(event) {
+   this.curr_index = 0
+   var params = {
+            "paragraph": this.state.curr_paragraph,
+            "subject": this.state.curr_subject
             }
-            url_str = window.location.href
-            xhr.open("POST",url_str)
-            xhr.setRequestHeader("action", "topics_list")
-            xhr.send(fd)
-        }
+   this.topics = ajax_get_sync("topics_list", "topics", params)
+   this.next_topic()
+  }
 
-        function set_next_word() {
-            if (current_index < words.length) {
-                var elem = document.getElementById("current_word_label")
-                elem.innerHTML = words[current_index]
-                current_index++
-                complete_training("Topics training", 0)
-                $("#topic_textarea").val("")
-            }
-        }
-        
+  next_topic(event) {
+    if (this.curr_index == this.topics.length) {
+      this.setState({curr_topic: "All questions are answered"}) 
+    }
+    else {
+    this.setState({curr_topic: this.topics[this.curr_index]})
+    this.curr_index++
+    }
+ }
 
+  render() {
+    var subjects = []
+    var val = ""
+    for (var x in this.state.subjects) {
+      val = this.state.subjects[x]
+      subjects.push(<option value={val}>{val}</option>)
+    }
+    var paragraphs = []
+    for (var x in this.state.paragraphs) {
+      val = this.state.paragraphs[x]
+      paragraphs.push(<option value={val}>{val}</option>)
+    }
+    return (
+    <div>
+    <form name="training_settings_form" method="post" action="#" onSubmit={submit}>
+    {this.props.token}
+    <label className="settings_label" htmlFor="subject"> Subject: </label>
+    <select id="subject" name="subject" onChange={this.change_subject}>{subjects}</select>
+    <label className="settings_label" htmlFor="paragraph"> Paragraph: </label>
+    <select id="paragraph" name="paragraph" onChange={this.change_paragraph}>{paragraphs}</select>
+    <button type="button" className="button_training_panel" id="button_begin">
+      <div id="button_id" onClick = {this.begin_test}> Begin test </div> <img id="button_icon_id" src="/static/images/icons/begin.png" />
+    </button>
+    <a id="topics_list" href=""> List of topics </a>
+    </form>
+  <div id="training_panel">
+    <div id="current_word"> <label id="current_word_label">{this.state.curr_topic}</label> </div>
+    <button id="button_next_categories" onClick={this.next_topic}> Next </button>
+    <textarea id="topic_textarea"></textarea>
+  </div>
+   </div>
+  )
+   }
+ }
 
-        function check_answer() {
-        var textarea = document.getElementById("topic_textarea")
-        var value = textarea.value
-        if (value == "") {
-          alert("The answer field is empty!")
-          return false
-        }
-        else {
-          return true
-        }
+subjects = ajax_get_sync("subjects_list", "subjects")
+paragraphs = ajax_get_sync("paragraphs_list", "paragraphs", {"subject": subjects[0]})
 
-        }
-
-
-        $(document).ready(function(){
-
-      $("#button_begin").click(function(){
-        event.preventDefault()
-        $("#training_field_ws").css("visibility", "visible")
-        get_topics()
-        })
-        $("#button_next_categories").click(
-            function() {
-               if (check_answer()) {
-                set_next_word()
-              }
-            }
-        )
-        $("#training_panel").hide()
-        })
-    </script>
-    {% endblock %}
+ReactDOM.render(<TopicsContainer subjects={subjects} paragraphs={paragraphs}/>, document.getElementById('training_container'));
+</script>
+{% endblock %}

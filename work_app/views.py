@@ -82,14 +82,9 @@ def logout_view(request):
 @login_required
 @only_get
 def index(request):
-	user = request.user
 	username = request.user.username
-	additional_stylesheet = cabinet_module.get_user_stylesheet("welcome_page", user)
-	params = {
-		'username': username,
-		'additional_stylesheet': additional_stylesheet
-		}
-	return render(request,"welcome_page.html", params)
+	params = {'username': username}
+	return render(request, "welcome_page.html", params)
 
 
 @login_required
@@ -97,14 +92,12 @@ def index(request):
 def cabinet(request):
 	if request.method == "GET":
 		user = request.user
-		additional_stylesheet = cabinet_module.get_user_stylesheet("cabinet", user)
 		current_settings = cabinet_module.get_current_settings(user)
 		training_words_amount = cabinet_module.get_amount_training_words(user)
 		user_log = logs.get_user_log(user)
 		params = {
 		'current_settings': current_settings,
 		'amount': training_words_amount,
-		'additional_stylesheet': additional_stylesheet,
 		'user_log': user_log,
 		'username': user.username
 		}
@@ -157,10 +150,7 @@ def initial_settings(request):
 		else:
 			return HttpResponse("Error!")
 	elif request.method == "GET":
-		user = request.user
-		additional_stylesheet = cabinet_module.get_user_stylesheet("settings", user)
-		params = {'additional_stylesheet': additional_stylesheet}
-		rend_page = render(request, "settings.html", params)
+		rend_page = render(request, "settings.html")
 		return rend_page
 
 	
@@ -171,9 +161,7 @@ def initial_settings(request):
 def trainings(request):
 	if request.method == "GET":
 		user = request.user
-		additional_stylesheet = cabinet_module.get_user_stylesheet("trainings", user)
-		params = {'additional_stylesheet': additional_stylesheet}
-		return render(request, "trainings.html", params)
+		return render(request, "trainings.html")
 	elif request.method == "POST":
 		user = request.user
 		training = request.POST["training"]
@@ -187,10 +175,8 @@ def trainings(request):
 @only_get_post
 def essay_writing(request):
 	user = request.user
-	additional_stylesheet = cabinet_module.get_user_stylesheet("essay_writing", user)
-	params = {'additional_stylesheet': additional_stylesheet}
 	if request.method == "GET":
-		return render(request, "essay_writing.html", params)
+		return render(request, "essay_writing.html")
 	elif request.method == "POST":
 		if request.headers["operation"] == "get_random_essay":
 			essay_dict = essays.get_random_essay_theme()
@@ -211,11 +197,7 @@ def word_translation(request):
 		user = request.user
 		letters = [{'lower': letter.lower(), 'upper': letter.upper()} 
 			      for letter in dict_module.get_letters_list()]
-		additional_stylesheet = cabinet_module.get_user_stylesheet("training_word_translation", user)
-		params = {
-		'letters': letters,
-		'additional_stylesheet': additional_stylesheet
-		}
+		params = {'letters': letters}
 		return render(request, "word_translation.html", params)
 	elif request.method == "POST":
 		quantity = int(request.POST.get("quantity", 0));
@@ -238,11 +220,7 @@ def translation_word(request):
 		user = request.user
 		letters = [{'lower': letter.lower(), 'upper': letter.upper()} 
 			 for letter in dict_module.get_letters_list()]
-		additional_stylesheet = cabinet_module.get_user_stylesheet("training_word_translation", user)
-		params = {
-			'letters': letters,
-			'additional_stylesheet': additional_stylesheet
-			}
+		params = {'letters': letters}
 		return render(request,"translation_word.html", params)
 	elif request.method == "POST":
 		quantity = int(request.POST.get("quantity", 0))
@@ -261,11 +239,7 @@ def make_a_sentence(request):
 		user = request.user
 		letters = [{'lower': letter.lower(),'upper': letter.upper()} 
 			 for letter in dict_module.get_letters_list()]
-		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
-		params = {
-			'letters': letters,
-			'additional_stylesheet': additional_stylesheet
-			}
+		params = {'letters': letters}
 		return render(request,"make_a_sentence.html", params)
 	elif request.method == "POST":
 		user = request.user
@@ -281,13 +255,8 @@ def make_a_sentence(request):
 @only_get_post
 def phrasal_verbs(request):
 	if request.method == "GET":
-		user = request.user
 		phrasal_verbs = words_tr.get_phrasal_verbs_list()
-		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
-		params = {
-			'phrasal_verbs': phrasal_verbs,
-			'additional_stylesheet': additional_stylesheet
-			}
+		params = {'phrasal_verbs': phrasal_verbs}
 		return render(request, "phrasal_verbs.html", params)
 	elif request.method == "POST":
 		ph_word = request.POST["phrasal_verb"]
@@ -302,11 +271,7 @@ def words_series(request):
 		user = request.user
 		letters = [{'lower': letter.lower(),'upper': letter.upper()} 
 			       for letter in dict_module.get_letters_list()]
-		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
-		params = {
-		'letters': letters,
-		'additional_stylesheet': additional_stylesheet
-		}
+		params = {'letters': letters}
 		return render(request,"words_series.html", params)
 	elif request.method == "POST":
 		letter = request.POST.get("first_letter", "all")
@@ -323,13 +288,8 @@ def words_series(request):
 @only_get_post
 def grammar_training(request):
 	if request.method == "GET":
-		user = request.user
 		grammar_sections = grammar_module.get_grammar_sections()
-		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
-		params = {
-			'grammar_sections': grammar_sections,
-			'additional_stylesheet': additional_stylesheet
-			}
+		params = {'grammar_sections': grammar_sections}
 		return render(request,"grammar_training.html", params)
 	elif request.method == "POST":
 		section = request.POST.get("section", "all")
@@ -344,13 +304,8 @@ def grammar_training(request):
 @only_get_post
 def categories_training(request):
 	if request.method == "GET":
-		user = request.user
 		categories_list = words_tr.get_list_of_categories()
-		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
-		parameters = {
-			'categories_list': categories_list,
-			'additional_stylesheet': additional_stylesheet
-			}
+		parameters = {'categories_list': categories_list}
 		return render(request, "categories_training.html", parameters)
 	elif request.method == "POST":
 		category = request.POST["category"]
@@ -364,13 +319,8 @@ def categories_training(request):
 @login_required
 @only_get
 def topics(request):
-	user = request.user
 	topics_list = topics_module.get_topics_list()
-	additional_stylesheet = cabinet_module.get_user_stylesheet("topics", user)
-	params = {
-		'topics_list':topics_list,
-		'additional_stylesheet': additional_stylesheet
-		}
+	params = {'topics_list':topics_list}
 	return render(request,"topics.html",params)
 
 
@@ -391,35 +341,27 @@ def new_topic(request):
 @only_get_post
 def topics_training(request):
 	if request.method == "GET":
-		user = request.user
-		subjects_list = topics_module.get_subjects()
-		if len(subjects_list) > 0:
-			paragraphs_list = topics_module.get_paragraphs(subjects_list[0])
-		else:
-			paragraphs_list = []
-		additional_stylesheet = cabinet_module.get_user_stylesheet("categories_training", user)
-		parameters = {
-		'subjects_list': subjects_list,
-		'paragraphs_list': paragraphs_list,
-		'additional_stylesheet': additional_stylesheet
-		}
-		response = render(request, "topics_training.html", parameters)
-		return response
-	elif request.method == "POST":
 		headers = request.headers
-		subject = request.POST["subject"]
-		paragraph = request.POST["paragraph"].replace("@", " ")
-		action = headers["action"]
-		if action == "paragraphs_list":
-			paragraphs_list = topics_module.get_paragraphs(subject)
-			paragraphs_dict = {"paragraphs": paragraphs_list}
-			response_json = JsonResponse(paragraphs_dict)
-			return response_json
-		elif action == "topics_list":
-			topics_list = topics_module.get_topics(paragraph,subject)
-			topics_dict = {"topics": topics_list}
-			response_json = JsonResponse(topics_dict)
-			return response_json
+		subject = request.GET.get("subject", None)
+		paragraph = request.GET.get("paragraph","")
+		action = headers.get("action", "get_page")
+		if action == "get_page":
+			subjects_list = topics_module.get_subjects()
+			if len(subjects_list) > 0:
+				paragraphs_list = topics_module.get_paragraphs(subjects_list[0])
+			else:
+				paragraphs_list = []
+			parameters = {
+			'subjects_list': subjects_list,
+			'paragraphs_list': paragraphs_list,
+			}
+			response = render(request, "topics_training.html", parameters)
+			return response
+		else:
+			dict_response = topics_module.process_get(action, paragraph, subject)
+			return JsonResponse(dict_response)
+	elif request.method == "POST":
+		pass #Piece for logging our training
 
 
 #------------------------------------------------------------------------------------
@@ -431,11 +373,9 @@ def dictionary(request):
 		user = request.user
 		words_list = dict_module.get_words()
 		letters_list = dict_module.get_letters_list()
-		addinional_stylesheet = cabinet_module.get_user_stylesheet("dictionary", user)
 		words_dict = {
 		'words_list':words_list,
 		'letters_list': letters_list,
-		'additional_stylesheet': addinional_stylesheet
 		}
 		return render(request, "dictionary.html", words_dict)
 	elif request.method == "POST":
@@ -472,11 +412,9 @@ def dictionary_letter(request, letter):
 		letter_low = letter.lower()
 		words_list = dict_module.get_words(letter_low, user)
 		letters_list = dict_module.get_letters_list()
-		addinional_stylesheet = cabinet_module.get_user_stylesheet("dictionary", user)
 		words_dict = {
 		'words_list':words_list,
-		'letters_list': letters_list,
-		'additional_stylesheet': addinional_stylesheet
+		'letters_list': letters_list
 		}
 		return render(request, "dictionary.html", words_dict) 
 	elif request.method == "POST":
@@ -498,9 +436,7 @@ def get_settings_path():
 def translator(request):
 	if request.method == "GET":
 		user = request.user
-		additional_stylesheet = cabinet_module.get_user_stylesheet("translator", user)
-		params = {"additional_stylesheet": additional_stylesheet}
-		return render(request, "translator.html", params)
+		return render(request, "translator.html")
 	elif request.method == "POST":
 		user = request.user
 		words_to_training = request.POST["words"]
@@ -513,13 +449,8 @@ def translator(request):
 @login_required
 @only_get
 def grammar(request):
-	user = request.user
-	additional_stylesheet = cabinet_module.get_user_stylesheet("grammar", user)
 	sections = grammar_module.get_grammar_list()
-	params = {
-		'additional_stylesheet': additional_stylesheet,
-		'sections': sections
-		}
+	params = {'sections': sections}
 	return render(request,"grammar.html",params)
 
 
@@ -546,13 +477,8 @@ def toefl(request):
 @login_required
 @only_get
 def files(request):
-	user = request.user
 	files_list = files_module.get_list_of_files()
-	additional_stylesheet = cabinet_module.get_user_stylesheet("files", user=user)
-	params = {
-		'files_list': files_list,
-		'additional_stylesheet': additional_stylesheet
-		}
+	params = {'files_list': files_list}
 	return render(request,"files.html",params)
 
 
@@ -574,7 +500,6 @@ def calendar_view(request):
 	if request.method == "GET":
 		if request.headers.get("operation", "") != "get_tasks":
 			user = request.user
-			additional_stylesheet = cabinet_module.get_user_stylesheet("style", user)
 			month = int(request.GET.get("month", datetime.datetime.now().month))
 			year = int(request.GET.get("year", datetime.datetime.now().year))
 			if len(request.GET) == 0:
@@ -584,7 +509,6 @@ def calendar_view(request):
 			url = request.path
 			months_list = cal.get_months_list(url, year)
 			params = {
-				'additional_stylesheet': additional_stylesheet,
 				'weeks_list': weeks_list,
 				'months_list': months_list,
 				'current_month': calendar.month_name[month],
@@ -625,15 +549,9 @@ def calendar_view(request):
 @login_required
 @only_get
 def api_list(request):
-	if request.method == "GET":
-		user = request.user
-		api_list = consts.API_LIST
-		additional_stylesheet = cabinet_module.get_user_stylesheet("api_list", user)
-		params = {
-			"api_list": api_list,
-			"additional_stylesheet": additional_stylesheet
-			}
-		return render(request, "api_list.html", params)
+	api_list = consts.API_LIST
+	params = {"api_list": api_list}
+	return render(request, "api_list.html", params)
 
 
 

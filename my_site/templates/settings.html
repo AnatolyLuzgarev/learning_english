@@ -1,5 +1,6 @@
 {% extends "base_page.html" %}
 {% block styles %}
+<link rel = "stylesheet" type = "text/css" href = "/static/css/settings.css">
   <style>
   .sql_label {
   width: 80%;
@@ -80,7 +81,7 @@
 
   </div>
  
-  <button id = "files_button" onclick = "location.href = {% url 'files'%}"> <div id = "file_id"> Files for loading </div> <img class ="button_icon" src = "/static/images/icons/file.png" /> </button>
+  <button id = "files_button" onclick = "location.href = {% url 'files' %}"> <div id = "file_id"> Files for loading </div> <img class ="button_icon" src = "/static/images/icons/file.png" /> </button>
 {% endblock %}
 {% block script %}
   <script>

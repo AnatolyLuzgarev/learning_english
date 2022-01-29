@@ -1,0 +1,14 @@
+:root {
+--bg_color: #417690;    
+}
+
+.blue_theme {
+--bg_color: #417690; 
+
+}
+
+.green_theme {
+--bg_color: rgba(150,220,170,0.5);
+
+}
+

@@ -1,11 +1,13 @@
 
+@import url("themes.css");
+
 #training_container {
 	width: 60%;
 }
 
 #training_container form {
 padding: 15px;
-background-color: #417690;
+background-color: var(--bg_color);
 color: white;
 width: 100%;
 

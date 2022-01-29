@@ -10,6 +10,21 @@ import random
 from .models import Topic
 
 
+def process_get(action, paragraph, subject):
+	if action == "subjects_list":
+		subjects_list = get_subjects()
+		subjects_dict = {"subjects": subjects_list}
+		return subjects_dict
+	if action == "paragraphs_list":
+		paragraphs_list = get_paragraphs(subject)
+		paragraphs_dict = {"paragraphs": paragraphs_list}
+		return paragraphs_dict
+	elif action == "topics_list":
+		topics_list = get_topics(paragraph,subject)
+		topics_dict = {"topics": topics_list}
+		return topics_dict
+
+
 def get_subjects():
 	subjects = Topic.objects.values("subject").distinct()
 	subjects_list = [x["subject"] for x in subjects]
@@ -23,9 +38,8 @@ def get_paragraphs(subject=None):
 	else:
 		paragraphs = Topic.objects.filter(subject=subject).values("paragraph")
 		paragraphs = paragraphs.distinct().order_by("paragraph")
-	paragraphs_list = [{'value': x["paragraph"].replace(" ","@"),
-					    'repr': x["paragraph"]} for x in paragraphs]
-	paragraphs_list.append({'value':'all','repr':'All'})
+	paragraphs_list = [x["paragraph"] for x in paragraphs]
+	paragraphs_list.append("all")
 	return paragraphs_list
 
 

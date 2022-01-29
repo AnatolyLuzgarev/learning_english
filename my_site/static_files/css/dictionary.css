@@ -1,3 +1,6 @@
+
+@import url("themes.css");
+
 #dictionary {
 position: absolute;
 border-width: 2px 2px 2px 2px;
@@ -90,3 +93,47 @@ font-size: 25px;
 #url_input {
 	display: none;
 }
+
+#dictionary {
+	border-color: #AAAAAA;
+	}
+	
+	#letters_list {
+	background-color: var(--bg_color);
+	color: #f5dd5d;
+	}
+	
+	#letters_list a:hover {
+	background-color: rgb(220,265,265);
+	}
+	#dictionary_table_head {
+	color: blue;
+	}
+	
+	#first_letter {
+	color: white;
+	background-color: rgb(200,250,250);
+	}
+	
+	.letter, .letter:visited {
+	color: #f5dd5d;
+	}
+	#dictionary_settings {
+	 border-color: #AAAAAA;
+	 background-color: var(--bg_color);
+	}
+	
+	#dictionary_settings #settings_label {
+		color: blue;
+		background-color: var(--bg_color);
+		color: white;
+	}
+	
+	#first_letter td {
+	border-color: rgb(200,250,250);
+	}
+	
+	  table tr:hover {
+	 background-color: #AAAAAA;
+			color: red;
+			 }

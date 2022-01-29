@@ -1,5 +1,10 @@
 {% extends "base_page.html" %}
 {% load static %}
+
+{% block styles %}
+<link rel = "stylesheet" type = "text/css" href = "/static/css/trainings.css">
+{% endblock %}
+
 {% block content %}
     <!--We will use relative links in the list of trainings-->
     <ul id = "trainings_list">
