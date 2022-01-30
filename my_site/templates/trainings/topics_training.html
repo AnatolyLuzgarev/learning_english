@@ -1,18 +1,18 @@
 {% extends "base_page.html" %}
 
 {% block additional_styles %}
-  
+
 {% endblock %}
 
 {% block additional_scripts %}
-<script src = "/static/js/react.development.js"></script>
-<script src = "/static/js/react-dom.development.js"></script> 
-<script src = "/static/js/babel.js"></script> 
-<script src = "/static/js/common_scripts.js" type="text/javascript"></script>
+<script src="/static/js/react.development.js"></script>
+<script src="/static/js/react-dom.development.js"></script>
+<script src="/static/js/babel.js"></script>
+<script src="/static/js/common_scripts.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block styles %}
-<link rel = "stylesheet" type = "text/css" href = "/static/css/topics.css">
+<link rel="stylesheet" type="text/css" href="/static/css/topics.css">
 {% endblock %}
 
 {% block content %}
@@ -20,118 +20,93 @@
 {% endblock %}
 
 {% block script %}
-<script  type = "text/babel">
+<script type="text/babel">
 
-function submit() {
+  class TopicsContainer extends React.Component {
 
-}
-
- var subjects = []
- var paragraphs = []
-
- function ajax_get_sync(action, key=undefined, parameters=undefined) {
-    var xhr = new XMLHttpRequest()
-    var url_str = window.location.href
-    url_str = url_str + get_params_string(parameters)
-    xhr.open("GET", url_str, false)
-    xhr.setRequestHeader("action", action)
-    xhr.send(null)
-    var response = xhr.responseText
-    if (key == undefined) {
-      var value = JSON.parse(response)
-    }
-    else {
-      var value = JSON.parse(response)[key]
-    }
-    return value
-  }
-
-class TopicsContainer extends React.Component {
-   
-  constructor(props) {
-    super(props)
-    this.curr_index = 0
-    this.topics = []
-    this.state = {
-       subjects: props["subjects"],
-       paragraphs: props["paragraphs"],
-       curr_subject: props["subjects"][0],
-       curr_paragraph: props["paragraphs"][0],
-       curr_topic: ""
+    constructor(props) {
+      super(props)
+      this.curr_index = 0
+      this.topics = []
+      this.state = {
+        subjects: props["subjects"],
+        paragraphs: props["paragraphs"],
+        curr_subject: props["subjects"][0],
+        curr_paragraph: props["paragraphs"][0],
+        curr_topic: ""
       }
-    this.change_subject = this.change_subject.bind(this)
-    this.change_paragraph = this.change_paragraph.bind(this)
-    this.begin_test = this.begin_test.bind(this)
-    this.next_topic = this.next_topic.bind(this)
+      this.change_subject = this.change_subject.bind(this)
+      this.change_paragraph = this.change_paragraph.bind(this)
+      this.begin_test = this.begin_test.bind(this)
+      this.next_topic = this.next_topic.bind(this)
+    }
+
+    change_subject(event) {
+      var paragraphs = ajax_get_sync("paragraphs_list", "paragraphs", { "subject": event.target.value })
+      this.setState({ paragraphs: paragraphs, curr_subject: event.target.value, curr_paragraph: paragraphs[0] })
+    }
+
+    change_paragraph(event) {
+      this.setState({ curr_paragraph: event.target.value })
+    }
+
+    begin_test(event) {
+      this.curr_index = 0
+      var params = {
+        "paragraph": this.state.curr_paragraph,
+        "subject": this.state.curr_subject
+      }
+      this.topics = ajax_get_sync("topics_list", "topics", params)
+      this.next_topic()
+    }
+
+    next_topic(event) {
+      if (this.curr_index == this.topics.length) {
+        this.setState({ curr_topic: "All questions are answered" })
+      }
+      else {
+        this.setState({ curr_topic: this.topics[this.curr_index] })
+        this.curr_index++
+      }
+    }
+
+    render() {
+      var subjects = []
+      var val = ""
+      for (var x in this.state.subjects) {
+        val = this.state.subjects[x]
+        subjects.push(<option value={val}>{val}</option>)
+      }
+      var paragraphs = []
+      for (var x in this.state.paragraphs) {
+        val = this.state.paragraphs[x]
+        paragraphs.push(<option value={val}>{val}</option>)
+      }
+      return (
+        <div>
+          <form name="training_settings_form" method="get" action="#">
+            <label className="settings_label" htmlFor="subject"> Subject: </label>
+            <select id="subject" name="subject" onChange={this.change_subject}>{subjects}</select>
+            <label className="settings_label" htmlFor="paragraph"> Paragraph: </label>
+            <select id="paragraph" name="paragraph" onChange={this.change_paragraph}>{paragraphs}</select>
+            <button type="button" className="button_training_panel" id="button_begin">
+              <div id="button_id" onClick={this.begin_test}> Begin test </div> <img id="button_icon_id" src="/static/images/icons/begin.png" />
+            </button>
+            <a id="topics_list" href=""> List of topics </a>
+          </form>
+          <div id="training_panel">
+            <div id="current_word"> <label id="current_word_label">{this.state.curr_topic}</label> </div>
+            <button id="button_next_categories" onClick={this.next_topic}> Next </button>
+            <textarea id="topic_textarea"></textarea>
+          </div>
+        </div>
+      )
+    }
   }
 
-  change_subject(event) {
-    var paragraphs = ajax_get_sync("paragraphs_list", "paragraphs", {"subject": event.target.value})
-    this.setState({paragraphs: paragraphs, curr_subject: event.target.value, curr_paragraph: paragraphs[0]})
-  }
+  var subjects = ajax_get_sync("subjects_list", "subjects")
+  var paragraphs = ajax_get_sync("paragraphs_list", "paragraphs", { "subject": subjects[0] })
 
-  change_paragraph(event) {
-    this.setState({curr_paragraph: event.target.value})
-  }
-
-  begin_test(event) {
-   this.curr_index = 0
-   var params = {
-            "paragraph": this.state.curr_paragraph,
-            "subject": this.state.curr_subject
-            }
-   this.topics = ajax_get_sync("topics_list", "topics", params)
-   this.next_topic()
-  }
-
-  next_topic(event) {
-    if (this.curr_index == this.topics.length) {
-      this.setState({curr_topic: "All questions are answered"}) 
-    }
-    else {
-    this.setState({curr_topic: this.topics[this.curr_index]})
-    this.curr_index++
-    }
- }
-
-  render() {
-    var subjects = []
-    var val = ""
-    for (var x in this.state.subjects) {
-      val = this.state.subjects[x]
-      subjects.push(<option value={val}>{val}</option>)
-    }
-    var paragraphs = []
-    for (var x in this.state.paragraphs) {
-      val = this.state.paragraphs[x]
-      paragraphs.push(<option value={val}>{val}</option>)
-    }
-    return (
-    <div>
-    <form name="training_settings_form" method="post" action="#" onSubmit={submit}>
-    {this.props.token}
-    <label className="settings_label" htmlFor="subject"> Subject: </label>
-    <select id="subject" name="subject" onChange={this.change_subject}>{subjects}</select>
-    <label className="settings_label" htmlFor="paragraph"> Paragraph: </label>
-    <select id="paragraph" name="paragraph" onChange={this.change_paragraph}>{paragraphs}</select>
-    <button type="button" className="button_training_panel" id="button_begin">
-      <div id="button_id" onClick = {this.begin_test}> Begin test </div> <img id="button_icon_id" src="/static/images/icons/begin.png" />
-    </button>
-    <a id="topics_list" href=""> List of topics </a>
-    </form>
-  <div id="training_panel">
-    <div id="current_word"> <label id="current_word_label">{this.state.curr_topic}</label> </div>
-    <button id="button_next_categories" onClick={this.next_topic}> Next </button>
-    <textarea id="topic_textarea"></textarea>
-  </div>
-   </div>
-  )
-   }
- }
-
-subjects = ajax_get_sync("subjects_list", "subjects")
-paragraphs = ajax_get_sync("paragraphs_list", "paragraphs", {"subject": subjects[0]})
-
-ReactDOM.render(<TopicsContainer subjects={subjects} paragraphs={paragraphs}/>, document.getElementById('training_container'));
+  ReactDOM.render(<TopicsContainer subjects={subjects} paragraphs={paragraphs} />, document.getElementById('training_container'));
 </script>
 {% endblock %}

@@ -71,7 +71,7 @@ def write_grammar(content):
 		current_section = ""
 		for clause in section:
 			if clause.tag == "h3":
-				section_text = clause.text
+				section_text = clause.text.strip()
 				new_section = GrammarSection(name=section_text)
 				new_section.save()
 				current_section = new_section

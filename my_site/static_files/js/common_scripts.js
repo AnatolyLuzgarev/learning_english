@@ -95,6 +95,26 @@ function build_id_array(words) {
 }
 
 
+
+
+function ajax_get_sync(action, key=undefined, parameters=undefined) {
+  var xhr = new XMLHttpRequest()
+  var url_str = window.location.href
+  url_str = url_str + get_params_string(parameters)
+  xhr.open("GET", url_str, false)
+  xhr.setRequestHeader("action", action)
+  xhr.send(null)
+  var response = xhr.responseText
+  if (key == undefined) {
+    var value = JSON.parse(response)
+  }
+  else {
+    var value = JSON.parse(response)[key]
+  }
+  return value
+}
+
+
 function get_params_string(params) {
   if (params != undefined) {
     var params_str = "?"

@@ -285,30 +285,38 @@ def words_series(request):
 
 #Grammar training section---------------------------------------------
 @login_required
-@only_get_post
+@only_get
 def grammar_training(request):
-	if request.method == "GET":
-		grammar_sections = grammar_module.get_grammar_sections()
-		params = {'grammar_sections': grammar_sections}
-		return render(request,"grammar_training.html", params)
-	elif request.method == "POST":
-		section = request.POST.get("section", "all")
+	action = request.headers.get("action", "get_page")
+	if action == "get_page":
+		return render(request,"grammar_training.html")
+	elif action == "sections_list":
+		sections = grammar_module.get_grammar_sections()
+		sections_json = {"sections": sections}
+		return JsonResponse(sections_json)
+	elif action == "rules_list":
+		section = request.GET.get("section", "all")
 		section = section.replace("_", " ")
-		random_rule = grammar_module.get_grammar_rule(section)
-		rule_dict = {"rule": random_rule}
+		random_rule = grammar_module.get_grammar_rules(section)
+		rule_dict = {"rules": random_rule}
 		return JsonResponse(rule_dict)
 	
 	
 #Categories training----------------------------------------------------------------
 @login_required
-@only_get_post
+@only_get
 def categories_training(request):
-	if request.method == "GET":
+	action = request.headers.get("action", "get_page")
+	if action == "get_page":
 		categories_list = words_tr.get_list_of_categories()
 		parameters = {'categories_list': categories_list}
 		return render(request, "categories_training.html", parameters)
-	elif request.method == "POST":
-		category = request.POST["category"]
+	elif action == "categories_list":
+		categories_list = words_tr.get_list_of_categories()
+		parameters = {'categories': categories_list}
+		return JsonResponse(parameters)
+	elif action == "words_list":
+		category = request.GET["category"]
 		words = words_tr.words_of_category(category)
 		json_object = {'words': words}
 		json_response = JsonResponse(json_object)
